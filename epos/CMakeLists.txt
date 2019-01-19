@@ -113,10 +113,10 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/epos.cpp
 # )
-#add_library(epos_cmd
-#  ${catkin_LIBRARIES}
-#  src/epos_cmd.cpp
-#)
+add_library(epos_cmd
+  ${catkin_LIBRARIES}
+  src/epos_cmd.cpp
+)
 #add_library(motor_cmd
 #  ${catkin_LIBRARIES}
 #  src/motor_cmd.cpp
@@ -133,6 +133,7 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 # add_executable(${PROJECT_NAME}_node src/epos_node.cpp)
 add_executable(RoverTestDemo $ENV{EPOS_LIB_DIR} src/RoverTestDemo.cpp)
 add_executable(RoverDrive $ENV{EPOS_LIB_DIR} src/RoverDrive.cpp)
+add_executable(test_node $ENV{EPOS_LIB_DIR} src/epos_test_node.cpp)
 #add_executable(motor_node $ENV{EPOS_LIB_DIR} src/motor_cmd_node.cpp)
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -147,6 +148,7 @@ add_executable(RoverDrive $ENV{EPOS_LIB_DIR} src/RoverDrive.cpp)
 ## Specify libraries to link a library or executable target against
 target_link_libraries(RoverTestDemo ${catkin_LIBRARIES} EposCmd ftd2xx)
 target_link_libraries(RoverDrive ${catkin_LIBRARIES} EposCmd ftd2xx)
+target_link_libraries(test_node ${catkin_LIBRARIES} EposCmd ftd2xx epos_cmd)
 #target_link_libraries(motor_node ${catkin_LIBRARIES} EposCmd ftd2xx motor_cmd)
 #############
 ## Install ##

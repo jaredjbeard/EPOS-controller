@@ -63,16 +63,16 @@ class epos_cmd {
     ENABLED = 0x0001,
     QUICKSTOP = 0x0002,
     FAULT = 0x0003
-  }
+  };
 
-  const string programName = "HelloEposCmd";
+  const std::string programName = "HelloEposCmd";
   //EAppMode eAppMode = AM_DEMO;
   std::vector<unsigned short> usNodeId;
   void* pKeyHandle = 0;
-  string deviceName;
-  string protocolStackName;
-  string interfaceName;
-  string portName;
+  std::string deviceName;
+  std::string protocolStackName;
+  std::string interfaceName;
+  std::string portName;
   int baudrate;
   int NumDevices;
   unsigned short maxStrSize;
@@ -99,7 +99,7 @@ public:
 
   /***********************PRINT/DEBUGGING*************************/
   int   getError      (unsigned short ErrorCodeValue, char* pErrorCode); //Maybe output string instead
-  void  LogError(string functionName, int p_lResult, unsigned int p_ulErrorCode);
+  void  LogError(std::string functionName, int p_lResult, unsigned int p_ulErrorCode);
 
 
 

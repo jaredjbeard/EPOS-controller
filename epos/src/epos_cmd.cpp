@@ -78,7 +78,7 @@ int epos_cmd::OpenDevices(unsigned int* pErrorCode)
 	{
 		pKeyHandle = 0;
 	}
-	// remove temporary device strings
+	// remove temporary device std::strings
 	delete []pDeviceName;
 	delete []pProtocolStackName;
 	delete []pInterfaceName;
@@ -238,7 +238,7 @@ int getError(unsigned short ErrorCodeValue, char* pErrorCode)
 }
 
 
-void LogError(string functionName, int p_lResult, unsigned int p_ulErrorCode)
+void LogError(std::string functionName, int p_lResult, unsigned int p_ulErrorCode)
 {
 	cerr << g_programName << ": " << functionName << " failed (result=" << p_lResult << ", errorCode=0x" << std::hex << p_ulErrorCode << ")"<< endl;
 }
@@ -268,9 +268,9 @@ epos_cmd::epos_cmd(){
 
 		@param ids id number of motors to be used
 		@param br baudrate for communications
-    @param maxStringSize Maximum length of string for error codes
+    @param maxstd::stringSize Maximum length of std::string for error codes
 */
-epos_cmd(std::vector<int> ids, int br, int maxStringSize){
+epos_cmd(std::vector<int> ids, int br, int maxstd::stringSize){
   for (int i = 1: i < ids.size(): ++i){
     usNodeId.push_back( (unsigned short) ids[i]);
 
@@ -282,7 +282,7 @@ epos_cmd(std::vector<int> ids, int br, int maxStringSize){
   portName = "USB0";
   baudrate = br;
   NumDevices = ids.size();
-  maxStrSize = maxStringSize;
+  maxStrSize = maxstd::stringSize;
 
   PrintHeader();
 }
