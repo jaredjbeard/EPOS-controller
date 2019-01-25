@@ -10,8 +10,23 @@
 #include <ros/console.h>
 #include <epos/epos_cmd.h>
 
+
+#include <stdio.h>
+
 int main(int argc, char** argv)
 {
+  ros::init(argc,argv,"subscriber");
+  ros::NodeHandle nh;
+
+  std::vector<int> motorIDs;
+  motorIDs.push_back(1);
+  motorIDs.push_back(2);
+  motorIDs.push_back(3);
+  motorIDs.push_back(4);
+  int baudrate = 1000000;
+
+  epos_cmd motorController(motorIDs, baudrate);
+
 
 
 

@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(epos)
 
+add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS roscpp std_msgs)
 
@@ -94,10 +95,10 @@ find_package(catkin REQUIRED COMPONENTS roscpp std_msgs)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES epos
-#  CATKIN_DEPENDS other_catkin_pkg
-#  DEPENDS system_lib
+  #INCLUDE_DIRS include
+  #LIBRARIES epos
+  #CATKIN_DEPENDS other_catkin_pkg
+  #DEPENDS system_lib
 )
 
 ###########
@@ -107,16 +108,16 @@ set(ENV{EPOS_LIB_DIR} /opt/EposCmdLib_6.5.1.0/lib/x86_64)
 link_directories($ENV{EPOS_LIB_DIR})
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS} /opt/EposCmdLib_6.5.1.0/include)
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/epos.cpp
 # )
-add_library(epos_cmd
-  ${catkin_LIBRARIES}
-  src/epos_cmd.cpp
-)
+# add_library(epos_cmd
+#   ${catkin_LIBRARIES}
+#  src/epos_cmd.cpp
+# )
 #add_library(motor_cmd
 #  ${catkin_LIBRARIES}
 #  src/motor_cmd.cpp
@@ -133,7 +134,7 @@ add_library(epos_cmd
 # add_executable(${PROJECT_NAME}_node src/epos_node.cpp)
 add_executable(RoverTestDemo $ENV{EPOS_LIB_DIR} src/RoverTestDemo.cpp)
 add_executable(RoverDrive $ENV{EPOS_LIB_DIR} src/RoverDrive.cpp)
-add_executable(test_node $ENV{EPOS_LIB_DIR} src/epos_test_node.cpp)
+add_executable(test_node $ENV{EPOS_LIB_DIR} src/epos_test_node.cpp src/epos_cmd.cpp)
 #add_executable(motor_node $ENV{EPOS_LIB_DIR} src/motor_cmd_node.cpp)
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -148,7 +149,7 @@ add_executable(test_node $ENV{EPOS_LIB_DIR} src/epos_test_node.cpp)
 ## Specify libraries to link a library or executable target against
 target_link_libraries(RoverTestDemo ${catkin_LIBRARIES} EposCmd ftd2xx)
 target_link_libraries(RoverDrive ${catkin_LIBRARIES} EposCmd ftd2xx)
-target_link_libraries(test_node ${catkin_LIBRARIES} EposCmd ftd2xx epos_cmd)
+target_link_libraries(test_node ${catkin_LIBRARIES} EposCmd ftd2xx)# epos_cmd)
 #target_link_libraries(motor_node ${catkin_LIBRARIES} EposCmd ftd2xx motor_cmd)
 #############
 ## Install ##

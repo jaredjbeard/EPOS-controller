@@ -12,7 +12,7 @@
 #include <sensor_msgs/Joy.h>
 
 #include <iostream>
-#include <epos/Definitions.h>
+#include <Definitions.h>
 #include <string.h>
 #include <sstream>
 #include <unistd.h>

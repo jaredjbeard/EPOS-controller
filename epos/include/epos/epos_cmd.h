@@ -26,7 +26,7 @@
 #include <geometry_msgs/Twist.h>
 
 #include <iostream>
-#include <epos/Definitions.h>
+#include <Definitions.h>
 #include <string.h>
 #include <sstream>
 #include <unistd.h>
@@ -40,18 +40,30 @@
 #include <sys/times.h>
 #include <sys/time.h>
 
+typedef void* HANDLE;
+typedef int BOOL;
+
+#ifndef MMC_MAX_LOG_MSG_SIZE
+	#define MMC_MAX_LOG_MSG_SIZE 512
+#endif
 
 class epos_cmd {
-  typedef void* HANDLE;
-  typedef int BOOL;
+  void* pKeyHandle = 0;
+  //unsigned short maxStrSize = 512;
 
-  /**enum EAppMode {
-  	AM_UNKNOWN,
-  	AM_DEMO,
-  	AM_INTERFACE_LIST,
-  	AM_PROTOCOL_LIST,
-  	AM_VERSION_INFO
-  };*/
+  std::vector<unsigned short> usNodeId;
+
+  std::string deviceName;
+  std::string protocolStackName;
+  std::string interfaceName;
+  std::string portName;
+  int baudrate;
+  int NumDevices;
+  int result;
+
+
+public:
+    /***********************ENUMS*********************************/
   enum OpMode {
     OMD_PROFILE_POSITION_MODE = 1,
     OMD_PROFILE_VELOCITY_MODE = 3,
@@ -65,41 +77,28 @@ class epos_cmd {
     FAULT = 0x0003
   };
 
-  const std::string programName = "HelloEposCmd";
-  //EAppMode eAppMode = AM_DEMO;
-  std::vector<unsigned short> usNodeId;
-  void* pKeyHandle = 0;
-  std::string deviceName;
-  std::string protocolStackName;
-  std::string interfaceName;
-  std::string portName;
-  int baudrate;
-  int NumDevices;
-  unsigned short maxStrSize;
-  int result;
-  std::vector<DevState> current_state;
+  /***********************VARIABLES*****************************/
+  DevState current_state;
 
-
-public:
   //Setup error codes to print intead of being accepted as input. Makes the output simpler...
   /***********************INTIALIZATION***************************/
-  int   OpenDevices   (unsigned int* pErrorCode);
-  int   CloseDevices  (unsigned int* pErrorCode);
+  int OpenDevices   (unsigned int* pErrorCode);
+  int CloseDevices  (unsigned int* pErrorCode);
 
 
   /***********************CONFIGURATION***************************/
-  int   setMode(unsigned short nodeID, OpMode mode, unsigned int* pErrorCode);
-  int   setModeCallback(const geometry_msgs::Twist& msg); //NEED TO MAKE MESSAGE FOR THIS, need to make way to display/handle specific error
-  int   resetDevice();
-  int   setState();
-  int   getState();
+  int setMode(unsigned short nodeID, OpMode mode, unsigned int* pErrorCode);
+  //void setModeCallback(const ; //NEED TO MAKE MESSAGE FOR THIS, need to make way to display/handle specific error
+  int resetDevice(unsigned short nodeID, unsigned int* pErrorCode);
+  int setState(unsigned short nodeID, DevState state, unsigned int* pErrorCode);
+  int getState(unsigned short nodeID, DevState state, unsigned int* pErrorCode);
 
   /***********************OPERATION*******************************/
 
 
   /***********************PRINT/DEBUGGING*************************/
-  int   getError      (unsigned short ErrorCodeValue, char* pErrorCode); //Maybe output string instead
-  void  LogError(std::string functionName, int p_lResult, unsigned int p_ulErrorCode);
+  int getError(unsigned short ErrorCodeValue, char* pErrorCode); //NEED to convert error code to text
+  void LogError(std::string functionName, int p_lResult, unsigned int p_ulErrorCode);
 
 
 
@@ -108,13 +107,13 @@ public:
                     // velocity units, default operation mode
   epos_cmd(std::vector<int> ids, int br);
   //motor_cmd(); <- read input from launch
-  ~epos_cmd();
+  ~epos_cmd(){}
 
 
 
 
 
-  int   handleFault(); // get
+/**  int   handleFault(); // get
   int   getCondition();
   int   setPosProfile();
   int   goToPos();
@@ -128,28 +127,30 @@ public:
   int   stopHome();
   int   waitForHome();
   int   setCurrentMust();
-  int   getCurrentMust();
+  int   getCurrentMust();*/
 
 
 
 private:
+  /***********************VARIABLES*****************************/
 
-  int   DemoProfilePositionMode(HANDLE p_DeviceHandle, unsigned short p_usNodeId, unsigned int & p_rlErrorCode);
-  int   Demo(unsigned int* pErrorCode);
-  int   PrepareDemo(unsigned int* pErrorCode);
+  /***********************FUNCTIONS*****************************/
+  short unsigned int getDevStateValue(DevState state);
 
 
-  void cmdReceived(const geometry_msgs::Twist& msg);
-  void clearFaultCallback(const sensor_msgs::Joy& msg);
+
+
+//  int   DemoProfilePositionMode(HANDLE p_DeviceHandle, unsigned short p_usNodeId, unsigned int & p_rlErrorCode);
+//  int   Demo(unsigned int* pErrorCode);
+//  int   PrepareDemo(unsigned int* pErrorCode);
+
+
+//  void cmdReceived(const geometry_msgs::Twist& msg);
+//  void clearFaultCallback(const sensor_msgs::Joy& msg);
 
   /***************Print and Commands*****************/
 
-  void  PrintSettings();
-  void  PrintUsage();
-  void  SeparatorLine();
-  void  PrintHeader();
-  void  PrintSettings();
-  int   PrepareMotor(unsigned int* pErrorCode, unsigned short int nodeId);
+//  int   PrepareMotor(unsigned int* pErrorCode, unsigned short int nodeId);
 
 };
 #endif

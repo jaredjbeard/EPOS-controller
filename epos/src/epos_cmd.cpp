@@ -8,11 +8,11 @@
 */
 #include <ros/ros.h>
 #include <ros/console.h>
+#include <Definitions.h>
 #include <epos/epos_cmd.h>
 #include <geometry_msgs/Twist.h>
 
 #include <iostream>
-#include <epos/Definitions.h>
 #include <string.h>
 #include <sstream>
 #include <unistd.h>
@@ -25,7 +25,6 @@
 #include <unistd.h>
 #include <sys/times.h>
 #include <sys/time.h>
-
 
 /////////////////////////////////////////////////////////////////////
 /***************************INITIALIZATION**************************/
@@ -120,7 +119,7 @@ int epos_cmd::CloseDevices(unsigned int* pErrorCode)
 		@param pErrorCode Pointer to error coud output by Maxon commands
   	@return Success(0)/Failure(1) of command
 */
-int   epos_cmd::setMode(unsigned short nodeID, OpMode mode, unsigned int* pErrorCode)
+int epos_cmd::setMode(unsigned short nodeID, OpMode mode, unsigned int* pErrorCode)
 {
 	result = MMC_FAILED;
 
@@ -136,14 +135,14 @@ int   epos_cmd::setMode(unsigned short nodeID, OpMode mode, unsigned int* pError
 
 		@param msg ROS msg of custom type:
 */
-void   epos_cmd::setModeCallback(const geometry_msgs::Twist& msg)
+/**void epos_cmd::setModeCallback(const )
 {
 	unsigned int* pErrorCode = 0;
-	for(int i = 0; i < msg->nodeId.size(); ++i)
+	for(int i = 0; i < msg.nodeID.size(); ++i)
 	{
-  	if (!setMode(msg->nodeID[i],msg->mode, pErrorCode))
+  	if (!setMode(msg.nodeID[i],msg.mode, pErrorCode))
 		{
-			ROS_ERROR('FAILED TO SET MODE OF NODE %i', nodeID[i])
+			ROS_ERROR("FAILED TO SET MODE OF NODE %d", msg.nodeID[i]);
 			break;
 		}
 	}
@@ -156,7 +155,7 @@ void   epos_cmd::setModeCallback(const geometry_msgs::Twist& msg)
 		@param pErrorCode Pointer to error coud output by Maxon commands
     @return Success(0)/Failure(1) of command
 */
-int   epos_cmd::resetDevice(unsigned short nodeID, unsigned int* pErrorCode)
+int epos_cmd::resetDevice(unsigned short nodeID, unsigned int* pErrorCode)
 {
 	int result = MMC_FAILED;
 
@@ -196,11 +195,12 @@ int epos_cmd::setState(unsigned short nodeID, DevState state, unsigned int* pErr
 		@param pErrorCode Pointer to error coud output by Maxon commands
     @return Success(0)/Failure(1) of command
 */
-int epos_cmd::setState(unsigned short nodeID, DevState* state, unsigned int* pErrorCode)
+int epos_cmd::getState(unsigned short nodeID, DevState state, unsigned int* pErrorCode)
 {
 	int result = MMC_FAILED;
+	short unsigned int stateValue = getDevStateValue(state);
 
-	if( VCS_GetState(pKeyHandle,nodeID,state,pErrorCode))
+	if( VCS_GetState(pKeyHandle,nodeID,&stateValue,pErrorCode))
 	{
 		result = MMC_SUCCESS;
 	}
@@ -215,6 +215,30 @@ int epos_cmd::setState(unsigned short nodeID, DevState* state, unsigned int* pEr
 /////////////////////////////////////////////////////////////////////
 
 
+
+
+
+
+short unsigned int epos_cmd::getDevStateValue(DevState state){
+		short unsigned int disabled = 0x0000;
+		short unsigned int enabled = 0x0001;
+		short unsigned int quickstop = 0x0002;
+		short unsigned int fault = 0x0003;
+
+		if (state == DISABLED){
+			return disabled;
+		} else if (state == ENABLED){
+			return enabled;
+		} else if (state == QUICKSTOP){
+			return quickstop;
+		} else if (state == FAULT){
+			return fault;
+		} else {
+			std::cout << "Invalid DevState" << std::endl;
+			return 8;
+		}
+}
+
 /////////////////////////////////////////////////////////////////////
 /***************************PRINT/DEBUGGING*************************/
 /////////////////////////////////////////////////////////////////////
@@ -228,10 +252,10 @@ int epos_cmd::setState(unsigned short nodeID, DevState* state, unsigned int* pEr
 int getError(unsigned short ErrorCodeValue, char* pErrorCode)
 {
   int result = MMC_FAILED;
-  if(VCS_GetErrorInfo(ErrorCodeValue, pErrorCode, maxStrSize))
+  if(VCS_GetErrorInfo(ErrorCodeValue, pErrorCode, MMC_MAX_LOG_MSG_SIZE))
   {
-    ROS_ERROR("ERROR %u: %s\n", ErrorCodeValue, *pErrorCode);
-		reult = MMC_SUCCESS
+    ROS_ERROR("ERROR %u: %u\n", ErrorCodeValue, *pErrorCode);
+		result = MMC_SUCCESS;
   }
 
 	return result;
@@ -240,7 +264,7 @@ int getError(unsigned short ErrorCodeValue, char* pErrorCode)
 
 void LogError(std::string functionName, int p_lResult, unsigned int p_ulErrorCode)
 {
-	cerr << g_programName << ": " << functionName << " failed (result=" << p_lResult << ", errorCode=0x" << std::hex << p_ulErrorCode << ")"<< endl;
+	std::cerr << "EPOS COMMAND: " << functionName << " failed (result=" << p_lResult << ", errorCode=0x" << std::hex << p_ulErrorCode << ")"<< std::endl;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -258,9 +282,8 @@ epos_cmd::epos_cmd(){
   portName = "USB0";
   baudrate = 1000000;
   NumDevices = 1;
-  maxStrSize = 512;
 
-  PrintHeader();
+	std::cout << "EPOS COMMAND START" << std::endl;
 }
 
 /**
@@ -268,10 +291,9 @@ epos_cmd::epos_cmd(){
 
 		@param ids id number of motors to be used
 		@param br baudrate for communications
-    @param maxstd::stringSize Maximum length of std::string for error codes
 */
-epos_cmd(std::vector<int> ids, int br, int maxstd::stringSize){
-  for (int i = 1: i < ids.size(): ++i){
+epos_cmd::epos_cmd(std::vector<int> ids, int br){
+  for (int i = 0; i < ids.size(); ++i){
     usNodeId.push_back( (unsigned short) ids[i]);
 
   }
@@ -282,7 +304,6 @@ epos_cmd(std::vector<int> ids, int br, int maxstd::stringSize){
   portName = "USB0";
   baudrate = br;
   NumDevices = ids.size();
-  maxStrSize = maxstd::stringSize;
 
-  PrintHeader();
+	std::cout << "EPOS COMMAND START" << std::endl;
 }

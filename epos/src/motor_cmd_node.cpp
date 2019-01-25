@@ -12,7 +12,7 @@
 #include <geometry_msgs/Twist.h>
 
 #include <iostream>
-#include <epos/Definitions.h>
+#include <Definitions.h>
 #include <string.h>
 #include <sstream>
 #include <unistd.h>
