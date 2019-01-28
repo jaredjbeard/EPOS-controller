@@ -32,10 +32,9 @@
 /**
 		Opens device and subdevices
 
-		@param pErrorCode Pointer to error code as output by Maxon codes
 		@return Success(0)/Failure(1) of commands
 */
-int epos_cmd::OpenDevices(unsigned int* pErrorCode)
+int epos_cmd::OpenDevices()
 {
 	//Success of code
 	int result = MMC_FAILED;
@@ -52,18 +51,18 @@ int epos_cmd::OpenDevices(unsigned int* pErrorCode)
 
 	ROS_INFO("Open device...");
 	//Opens device
-	pKeyHandle = VCS_OpenDevice(pDeviceName, pProtocolStackName, pInterfaceName, pPortName, pErrorCode);
+	pKeyHandle = VCS_OpenDevice(pDeviceName, pProtocolStackName, pInterfaceName, pPortName, errorCode);
 	//checking device opened
-	if(pKeyHandle!=0 && *pErrorCode == 0)
+	if(pKeyHandle!=0 && *errorCode == 0)
 	{
 		unsigned int lBaudrate = 0;
 		unsigned int lTimeout = 0;
 
-		if(VCS_GetProtocolStackSettings(pKeyHandle, &lBaudrate, &lTimeout, pErrorCode)!=0)
+		if(VCS_GetProtocolStackSettings(pKeyHandle, &lBaudrate, &lTimeout, errorCode)!=0)
 		{
-			if(VCS_SetProtocolStackSettings(pKeyHandle, baudrate, lTimeout, pErrorCode)!=0)
+			if(VCS_SetProtocolStackSettings(pKeyHandle, baudrate, lTimeout, errorCode)!=0)
 			{
-				if(VCS_GetProtocolStackSettings(pKeyHandle, &lBaudrate, &lTimeout, pErrorCode)!=0)
+				if(VCS_GetProtocolStackSettings(pKeyHandle, &lBaudrate, &lTimeout, errorCode)!=0)
 				{
 					if(baudrate==(int)lBaudrate)
 					{
@@ -91,17 +90,16 @@ int epos_cmd::OpenDevices(unsigned int* pErrorCode)
 /**
 		Closes device and subdevices
 
-		@param pErrorCode Pointer to error coud output by Maxon commands
   	@return Success(0)/Failure(1) of command
 */
-int epos_cmd::CloseDevices(unsigned int* pErrorCode)
+int epos_cmd::CloseDevices()
 {
 	int result = MMC_FAILED;
-	*pErrorCode = 0;
+	*errorCode = 0;
 
 	ROS_INFO("Close device");
 
-	if(VCS_CloseAllDevices(pErrorCode)!=0 && *pErrorCode == 0)
+	if(VCS_CloseAllDevices(errorCode)!=0 && *errorCode == 0)
 	{
 		result = MMC_SUCCESS;
 	}
@@ -116,14 +114,13 @@ int epos_cmd::CloseDevices(unsigned int* pErrorCode)
 
 		@param nodeID node to have operation mode modified
 		@param mode operation mode to be set
-		@param pErrorCode Pointer to error coud output by Maxon commands
   	@return Success(0)/Failure(1) of command
 */
-int epos_cmd::setMode(unsigned short nodeID, OpMode mode, unsigned int* pErrorCode)
+int epos_cmd::setMode(unsigned short nodeID, OpMode mode)
 {
 	result = MMC_FAILED;
 
-	if(VCS_SetOperationMode(pKeyHandle, nodeID, mode, pErrorCode))
+	if(VCS_SetOperationMode(pKeyHandle, nodeID, mode, errorCode))
 	{
 		result = MMC_SUCCESS;
 	}
@@ -137,10 +134,9 @@ int epos_cmd::setMode(unsigned short nodeID, OpMode mode, unsigned int* pErrorCo
 */
 /**void epos_cmd::setModeCallback(const )
 {
-	unsigned int* pErrorCode = 0;
 	for(int i = 0; i < msg.nodeID.size(); ++i)
 	{
-  	if (!setMode(msg.nodeID[i],msg.mode, pErrorCode))
+  	if (!setMode(msg.nodeID[i],msg.mode, errorCode))
 		{
 			ROS_ERROR("FAILED TO SET MODE OF NODE %d", msg.nodeID[i]);
 			break;
@@ -152,14 +148,14 @@ int epos_cmd::setMode(unsigned short nodeID, OpMode mode, unsigned int* pErrorCo
 		Resets device state machine
 
     @param nodeID node to have operation mode modified
-		@param pErrorCode Pointer to error coud output by Maxon commands
+
     @return Success(0)/Failure(1) of command
 */
-int epos_cmd::resetDevice(unsigned short nodeID, unsigned int* pErrorCode)
+int epos_cmd::resetDevice(unsigned short nodeID)
 {
 	int result = MMC_FAILED;
 
-	if (VCS_ResetDevice(pKeyHandle, nodeID, pErrorCode))
+	if (VCS_ResetDevice(pKeyHandle, nodeID, errorCode))
 	{
 		result = MMC_SUCCESS;
 	}
@@ -172,14 +168,13 @@ int epos_cmd::resetDevice(unsigned short nodeID, unsigned int* pErrorCode)
 
     @param nodeID node to have operation mode modified
 		@param state desried state of state machine
-		@param pErrorCode Pointer to error coud output by Maxon commands
     @return Success(0)/Failure(1) of command
 */
-int epos_cmd::setState(unsigned short nodeID, DevState state, unsigned int* pErrorCode)
+int epos_cmd::setState(unsigned short nodeID, DevState state)
 {
 	int result = MMC_FAILED;
 
-	if( current_state == state || VCS_SetState(pKeyHandle,nodeID,state,pErrorCode))
+	if( current_state == state || VCS_SetState(pKeyHandle,nodeID,state,errorCode))
 	{
 		result = MMC_SUCCESS;
 	}
@@ -192,15 +187,14 @@ int epos_cmd::setState(unsigned short nodeID, DevState state, unsigned int* pErr
 
     @param nodeID node to have operation mode modified
 		@param state desried state of state machine
-		@param pErrorCode Pointer to error coud output by Maxon commands
     @return Success(0)/Failure(1) of command
 */
-int epos_cmd::getState(unsigned short nodeID, DevState state, unsigned int* pErrorCode)
+int epos_cmd::getState(unsigned short nodeID, DevState state)
 {
 	int result = MMC_FAILED;
 	short unsigned int stateValue = getDevStateValue(state);
 
-	if( VCS_GetState(pKeyHandle,nodeID,&stateValue,pErrorCode))
+	if( VCS_GetState(pKeyHandle,nodeID,&stateValue,errorCode))
 	{
 		result = MMC_SUCCESS;
 	}
@@ -213,10 +207,6 @@ int epos_cmd::getState(unsigned short nodeID, DevState state, unsigned int* pErr
 /////////////////////////////////////////////////////////////////////
 /***************************OPERATION*******************************/
 /////////////////////////////////////////////////////////////////////
-
-
-
-
 
 
 short unsigned int epos_cmd::getDevStateValue(DevState state){
@@ -246,15 +236,14 @@ short unsigned int epos_cmd::getDevStateValue(DevState state){
 		Displays Error info for an executed function
 
     @param ErrorCodeValue Error code number
-		@param pErrorCode Pointer to error coud output by Maxon commands
     @return Success(0)/Failure(1) of command
 */
-int getError(unsigned short ErrorCodeValue, char* pErrorCode)
+int epos_cmd::getError(unsigned short errorCodeValue)
 {
   int result = MMC_FAILED;
-  if(VCS_GetErrorInfo(ErrorCodeValue, pErrorCode, MMC_MAX_LOG_MSG_SIZE))
+  if(VCS_GetErrorInfo(errorCodeValue, errorCodeChar, MMC_MAX_LOG_MSG_SIZE))
   {
-    ROS_ERROR("ERROR %u: %u\n", ErrorCodeValue, *pErrorCode);
+    ROS_ERROR("ERROR %u: %u\n", errorCodeValue, *errorCodeChar);
 		result = MMC_SUCCESS;
   }
 
@@ -262,9 +251,9 @@ int getError(unsigned short ErrorCodeValue, char* pErrorCode)
 }
 
 
-void LogError(std::string functionName, int p_lResult, unsigned int p_ulErrorCode)
+void epos_cmd::LogError(std::string functionName, int result)
 {
-	std::cerr << "EPOS COMMAND: " << functionName << " failed (result=" << p_lResult << ", errorCode=0x" << std::hex << p_ulErrorCode << ")"<< std::endl;
+	std::cerr << "EPOS COMMAND: " << functionName << " failed (result=" << result << ", errorCode=0x" << std::hex << errorCode << ")"<< std::endl;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -275,7 +264,6 @@ void LogError(std::string functionName, int p_lResult, unsigned int p_ulErrorCod
 */
 epos_cmd::epos_cmd(){
   usNodeId.push_back(2);
-  pKeyHandle = 0;
   deviceName = "EPOS4";
   protocolStackName = "MAXON SERIAL V2";
   interfaceName = "USB";
@@ -297,7 +285,6 @@ epos_cmd::epos_cmd(std::vector<int> ids, int br){
     usNodeId.push_back( (unsigned short) ids[i]);
 
   }
-  pKeyHandle = 0;
   deviceName = "EPOS4";
   protocolStackName = "MAXON SERIAL V2";
   interfaceName = "USB";

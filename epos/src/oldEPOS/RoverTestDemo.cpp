@@ -619,7 +619,7 @@ int main(int argc, char** argv)
 			if((lResult = OpenDevice(&ulErrorCode))!=MMC_SUCCESS)
 			{
 				LogError("OpenDevice", lResult, ulErrorCode);
-				std::cout << "FUCK" << std::endl;
+
 				return lResult;
 			}
 			std::cout << "YAY" << std::endl;

@@ -27,7 +27,10 @@ int main(int argc, char** argv)
 
   epos_cmd motorController(motorIDs, baudrate);
 
-
+ if (motorController.OpenDevices())
+ {
+   std::cout << "oh no" << std::endl;
+ }
 
 
 

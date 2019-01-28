@@ -132,9 +132,9 @@ include_directories(include ${catkin_INCLUDE_DIRS} /opt/EposCmdLib_6.5.1.0/inclu
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/epos_node.cpp)
-add_executable(RoverTestDemo $ENV{EPOS_LIB_DIR} src/RoverTestDemo.cpp)
-add_executable(RoverDrive $ENV{EPOS_LIB_DIR} src/RoverDrive.cpp)
-add_executable(test_node $ENV{EPOS_LIB_DIR} src/epos_test_node.cpp src/epos_cmd.cpp)
+add_executable(RoverTestDemo $ENV{EPOS_LIB_DIR} src/oldEPOS/RoverTestDemo.cpp)
+add_executable(RoverDrive $ENV{EPOS_LIB_DIR} src/oldEPOS/RoverDrive.cpp)
+add_executable(test_node $ENV{EPOS_LIB_DIR} src/EPOS_CMD/epos_test_node.cpp src/EPOS_CMD/epos_cmd.cpp)
 #add_executable(motor_node $ENV{EPOS_LIB_DIR} src/motor_cmd_node.cpp)
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

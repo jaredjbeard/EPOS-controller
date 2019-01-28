@@ -60,6 +60,8 @@ class epos_cmd {
   int baudrate;
   int NumDevices;
   int result;
+  unsigned int *errorCode;
+  char* errorCodeChar;
 
 
 public:
@@ -82,23 +84,23 @@ public:
 
   //Setup error codes to print intead of being accepted as input. Makes the output simpler...
   /***********************INTIALIZATION***************************/
-  int OpenDevices   (unsigned int* pErrorCode);
-  int CloseDevices  (unsigned int* pErrorCode);
+  int OpenDevices   ();
+  int CloseDevices  ();
 
 
   /***********************CONFIGURATION***************************/
-  int setMode(unsigned short nodeID, OpMode mode, unsigned int* pErrorCode);
+  int setMode(unsigned short nodeID, OpMode mode);
   //void setModeCallback(const ; //NEED TO MAKE MESSAGE FOR THIS, need to make way to display/handle specific error
-  int resetDevice(unsigned short nodeID, unsigned int* pErrorCode);
-  int setState(unsigned short nodeID, DevState state, unsigned int* pErrorCode);
-  int getState(unsigned short nodeID, DevState state, unsigned int* pErrorCode);
+  int resetDevice(unsigned short nodeID);
+  int setState(unsigned short nodeID, DevState state);
+  int getState(unsigned short nodeID, DevState state);
 
   /***********************OPERATION*******************************/
 
 
   /***********************PRINT/DEBUGGING*************************/
-  int getError(unsigned short ErrorCodeValue, char* pErrorCode); //NEED to convert error code to text
-  void LogError(std::string functionName, int p_lResult, unsigned int p_ulErrorCode);
+  int getError(unsigned short errorCodeValue); //NEED to convert error code to text
+  void LogError(std::string functionName, int result);
 
 
 
