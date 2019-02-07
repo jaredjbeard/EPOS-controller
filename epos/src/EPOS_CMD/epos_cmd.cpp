@@ -34,7 +34,7 @@
 
     @return Success(0)/Failure(1) of commands
  */
-int epos_cmd::OpenDevices()
+int epos_cmd::openDevices()
 {
 		//Success of code
 		int result = MMC_FAILED;
@@ -49,24 +49,27 @@ int epos_cmd::OpenDevices()
 		strcpy(pInterfaceName, interfaceName.c_str());
 		strcpy(pPortName, portName.c_str());
 
+		//std::cout << "dev " << pDeviceName << "__Prot " << pProtocolStackName << "__Int " << pInterfaceName << "__Por" << pPortName << "__Code" << errorCode << std::endl;
+
 		ROS_INFO("Open device...");
 		//Opens device
-		pKeyHandle = VCS_OpenDevice(pDeviceName, pProtocolStackName, pInterfaceName, pPortName, errorCode);
+		keyHandle = VCS_OpenDevice(pDeviceName, pProtocolStackName, pInterfaceName, pPortName, &errorCode);
 		//checking device opened
-		if(pKeyHandle!=0 && *errorCode == 0)
+		if(keyHandle!=0 && errorCode == 0)
 		{
 				unsigned int lBaudrate = 0;
 				unsigned int lTimeout = 0;
 
-				if(VCS_GetProtocolStackSettings(pKeyHandle, &lBaudrate, &lTimeout, errorCode)!=0)
+				if(VCS_GetProtocolStackSettings(keyHandle, &lBaudrate, &lTimeout, &errorCode)!=0)
 				{
-						if(VCS_SetProtocolStackSettings(pKeyHandle, baudrate, lTimeout, errorCode)!=0)
+						if(VCS_SetProtocolStackSettings(keyHandle, baudrate, lTimeout, &errorCode)!=0)
 						{
-								if(VCS_GetProtocolStackSettings(pKeyHandle, &lBaudrate, &lTimeout, errorCode)!=0)
+								if(VCS_GetProtocolStackSettings(keyHandle, &lBaudrate, &lTimeout, &errorCode)!=0)
 								{
 										if(baudrate==(int)lBaudrate)
 										{
 												result = MMC_SUCCESS;
+												ROS_INFO("Device opened");
 										}
 								}
 						}
@@ -74,7 +77,7 @@ int epos_cmd::OpenDevices()
 		}
 		else
 		{
-				pKeyHandle = 0;
+				keyHandle = 0;
 		}
 		// remove temporary device std::strings
 		delete []pDeviceName;
@@ -92,13 +95,13 @@ int epos_cmd::OpenDevices()
 
     @return Success(0)/Failure(1) of command
  */
-int epos_cmd::CloseDevices()
+int epos_cmd::closeDevices()
 {
 		int result = MMC_FAILED;
 
 		ROS_INFO("Close device");
 
-		if(VCS_CloseAllDevices(errorCode)!=0 && *errorCode == 0)
+		if(VCS_CloseAllDevices(&errorCode)!=0 && errorCode == 0)
 		{
 				result = MMC_SUCCESS;
 		}
@@ -115,14 +118,17 @@ int epos_cmd::CloseDevices()
     @param mode operation mode to be set
     @return Success(0)/Failure(1) of command
  */
-int epos_cmd::setMode(std::vector<unsigned short> nodeIDs, OpMode mode)
+int epos_cmd::setMode(std::vector<int> IDs, OpMode mode)
 {
-		for (int i = 0; i < nodeIDs.size(); ++i)
+		for (int i = 0; i < IDs.size(); ++i)
 		{
-				if(!VCS_SetOperationMode(pKeyHandle, nodeIDs[i], mode, errorCode))
+				if(VCS_SetOperationMode(keyHandle, IDs[i], mode, &errorCode) == 0)
 				{
 						logError("SetOperationMode");
 						return MMC_FAILED;
+				} else
+				{
+						ROS_DEBUG("Operation mode set");
 				}
 		}
 		return MMC_SUCCESS;
@@ -156,7 +162,7 @@ int epos_cmd::resetDevice(unsigned short nodeID)
 {
 		int result = MMC_FAILED;
 
-		if (VCS_ResetDevice(pKeyHandle, nodeID, errorCode))
+		if (VCS_ResetDevice(keyHandle, nodeID, &errorCode))
 		{
 				result = MMC_SUCCESS;
 		}
@@ -175,7 +181,7 @@ int epos_cmd::setState(unsigned short nodeID, DevState state)
 {
 		int result = MMC_FAILED;
 
-		if( current_state == state || VCS_SetState(pKeyHandle,nodeID,state,errorCode))
+		if( current_state == state || VCS_SetState(keyHandle,nodeID,state,&errorCode))
 		{
 				result = MMC_SUCCESS;
 		}
@@ -190,17 +196,20 @@ int epos_cmd::setState(unsigned short nodeID, DevState state)
     @param state desried state of state machine
     @return Success(0)/Failure(1) of command
  */
-int epos_cmd::getState(unsigned short nodeID, DevState state)
+int epos_cmd::getState(unsigned short nodeID, DevState &state)
 {
-		int result = MMC_FAILED;
-		short unsigned int stateValue = getDevStateValue(state);
-
-		if( VCS_GetState(pKeyHandle,nodeID,&stateValue,errorCode))
+		short unsigned int stateValue; // = getDevStateValue(state);
+		ROS_DEBUG("Retrieving State");
+		if( VCS_GetState(keyHandle,nodeID,&stateValue,&errorCode))
 		{
-				result = MMC_SUCCESS;
+				ROS_DEBUG("State Retrieved");
+				state = getDevState(stateValue);
+				return MMC_SUCCESS;
+				//std::cout << state << std::endl;
+		} else {
+				ROS_WARN("State Failed");
+				return MMC_FAILED;
 		}
-
-		return result;
 }
 
 
@@ -230,136 +239,91 @@ short unsigned int epos_cmd::getDevStateValue(DevState state){
 		}
 }
 
-int epos_cmd::handleFault(std::vector<int> nodeIDs)
+enum epos_cmd::DevState epos_cmd::getDevState(short unsigned int state)
 {
-		int result = MMC_SUCCESS;
-		for (int i = 0; i < nodeIDs.size(); ++i)
+		short unsigned int disabled = 0x0000;
+		short unsigned int enabled = 0x0001;
+		short unsigned int quickstop = 0x0002;
+		short unsigned int fault = 0x0003;
+
+		if (state == disabled) {
+				return DISABLED;
+		} else if (state == enabled) {
+				return ENABLED;
+		} else if (state == quickstop) {
+				return QUICKSTOP;
+		} else if (state == fault) {
+				return FAULT;
+		} else {
+				std::cout << "Invalid DevStateValues" << std::endl;
+				return FAULT;
+		}
+}
+
+int epos_cmd::handleFault(int ID)
+{
+		BOOL isFault = 0;
+		if(VCS_GetFaultState(keyHandle, ID, &isFault, &errorCode ) == 0)
 		{
-				BOOL isFault = 0;
-				if(VCS_GetFaultState(pKeyHandle, nodeIDs[i], &isFault, errorCode ) == 0)
+				logError("VCS_GetFaultState");
+				if(isFault == true && VCS_ClearFault(keyHandle, ID, &errorCode) != 0)
 				{
-						logError("VCS_GetFaultState");
-						if(isFault == true && VCS_ClearFault(pKeyHandle, nodeIDs[i], errorCode) == 0)
+						logError("VCS_ClearFault");
+						return MMC_FAILED;
+				} else
+				{
+						return MMC_SUCCESS;
+				}
+		}
+}
+
+int epos_cmd::prepareMotors(std::vector<int> IDs)
+{
+		DevState state;
+		for (int i = 0; i < IDs.size(); ++i)
+		{
+				if (getState(IDs[i], state) == 0)
+				{
+
+						if (state == FAULT)
 						{
-								logError("VCS_ClearFault");
-								result = MMC_FAILED;
-								return result;
+								handleFault(IDs[i]);
+
+						}
+						if (state != ENABLED)
+						{
+								setState(IDs[i], ENABLED);
 						}
 				}
 		}
-		return result;
+		return MMC_SUCCESS;
 }
-/**
-   int PrepareMotor(unsigned int* p_pErrorCode, unsigned short int nodeId)
-   {
-    int lResult = MMC_SUCCESS;
 
-    if(lResult==0)
-    {
-      BOOL oIsEnabled = 0;
+int epos_cmd::goToVel(std::vector<int> IDs, std::vector<long> velocities)
+{
 
-      if(VCS_GetEnableState(g_pKeyHandle, nodeId, &oIsEnabled, p_pErrorCode) == 0)
-      {
-        logError("VCS_GetEnableState", lResult, *p_pErrorCode);
-        lResult = MMC_FAILED;
-      }
+		for (int i = 0; i < IDs.size(); ++i)
+		{
+				if (velocities[i] > 0)
+				{
+						if (VCS_MoveWithVelocity(keyHandle, IDs[i], velocities[i],&errorCode) == 0)
+						{
+								logError("VCS_MoveWithVelocity");
+								return MMC_FAILED;
+						} else {
+								ROS_INFO("Running");
+						}
+				} else
+				{
+						if (VCS_HaltVelocityMovement(keyHandle, IDs[i],&errorCode) == 0)
+						{
+								return MMC_FAILED;
+						}
+				}
+		}
+		return MMC_SUCCESS;
+}
 
-      if(lResult==0)
-      {
-        if(!oIsEnabled)
-        {
-          if(VCS_SetEnableState(g_pKeyHandle, nodeId, p_pErrorCode) == 0)
-          {
-            logError("VCS_SetEnableState", lResult, *p_pErrorCode);
-            lResult = MMC_FAILED;
-          }
-        }
-      }
-    }
-   }
-   return lResult;
-   }
-
-   /**bool ProfileVelocityMode(HANDLE p_DeviceHandle, unsigned short p_usNodeId, unsigned int & p_rlErrorCode, long Velocity)
-   {
-   int lResult = MMC_SUCCESS;
-   std::stringstream msg;
-    long targetvelocity = Velocity;
-    if (p_usNodeId > 3)
-        targetvelocity = -targetvelocity;
-   msg << "set profile velocity mode, node = " << p_usNodeId;
-
-   logInfo(msg.str());
-
-   if(VCS_ActivateProfileVelocityMode(p_DeviceHandle, p_usNodeId, &p_rlErrorCode) == 0)
-   {
-    logError("VCS_ActivateProfileVelocityMode", lResult, p_rlErrorCode);
-    lResult = MMC_FAILED;
-   }
-   else
-   {
-    stringstream msg;
-    msg << "move with target velocity = " << targetvelocity << " rpm, node = " << p_usNodeId;
-    logInfo(msg.str());
-
-    if(VCS_MoveWithVelocity(p_DeviceHandle, p_usNodeId, targetvelocity, &p_rlErrorCode) == 0)
-    {
-      lResult = MMC_FAILED;
-      logError("VCS_MoveWithVelocity", lResult, p_rlErrorCode);
-    }
-   }
-
-   return lResult;
-   }
-
-
-   int PrepareDemo(unsigned int* p_pErrorCode)
-   {
-   int lResult = MMC_SUCCESS;
-   for (int deviceNum = 1; deviceNum < (NumDevices + 1); deviceNum++)
-   {
-      lResult = PrepareMotor(p_pErrorCode, deviceNum);
-      if (lResult != MMC_SUCCESS)
-      {
-          return lResult;
-      }
-   }
-   return lResult;
-   }
-
-   int Demo(unsigned int* p_pErrorCode)
-   {
-   int lResult = MMC_SUCCESS;
-   unsigned int lErrorCode = 0;
-    for (int deviceNum = 1; deviceNum < (NumDevices + 1); deviceNum++)
-    {
-        long Velocity = 2000;
-      lResult = ProfileVelocityMode(g_pKeyHandle, deviceNum, lErrorCode, Velocity);
-      if(lResult != MMC_SUCCESS)
-      {
-        logError("DemoProfileVelocityMode", lResult, lErrorCode);
-      }
-   }
-   sleep(5);
-      for (int deviceNum = 1; deviceNum < (NumDevices + 1); deviceNum++)
-    {
-      lResult = HaltVelocity(g_pKeyHandle, deviceNum, lErrorCode);
-      if(lResult != MMC_SUCCESS)
-      {
-        logError("DemoProfileVelocityMode", lResult, lErrorCode);
-      }
-   }
-   for (int deviceNum = 1; deviceNum < (NumDevices + 1); deviceNum++)
-   {
-      if(VCS_SetDisableState(g_pKeyHandle, deviceNum, &lErrorCode) == 0)
-      {
-        logError("VCS_SetDisableState", lResult, lErrorCode);
-        lResult = MMC_FAILED;
-      }
-   }
-
-   return lResult;
-   }*/
 
 /////////////////////////////////////////////////////////////////////
 /***************************PRINT/DEBUGGING*************************/
@@ -388,6 +352,19 @@ void epos_cmd::logError(std::string functionName)
 		std::cerr << "EPOS COMMAND: " << functionName << " failed (errorCode=0x" << std::hex << errorCode << ")"<< std::endl;
 }
 
+
+int epos_cmd::checkNodeID(int ID)
+{
+		int result = MMC_FAILED;
+
+		for (int i = 0; i < nodeIDList.size(); ++i)
+		{
+				if (ID == nodeIDList[i]) {
+						result == MMC_SUCCESS;
+				}
+		}
+		return result;
+}
 /////////////////////////////////////////////////////////////////////
 /***************************CONSTRUCTORS****************************/
 /////////////////////////////////////////////////////////////////////
@@ -395,7 +372,7 @@ void epos_cmd::logError(std::string functionName)
     Default Constructor
  */
 epos_cmd::epos_cmd(){
-		usNodeId.push_back(2);
+		nodeIDList.push_back(2);
 		deviceName = "EPOS4";
 		protocolStackName = "MAXON SERIAL V2";
 		interfaceName = "USB";
@@ -403,7 +380,7 @@ epos_cmd::epos_cmd(){
 		baudrate = 1000000;
 		NumDevices = 1;
 
-		std::cout << "EPOS COMMAND START" << std::endl;
+		ROS_INFO("EPOS COMMAND START");
 }
 
 /**
@@ -414,7 +391,7 @@ epos_cmd::epos_cmd(){
  */
 epos_cmd::epos_cmd(std::vector<int> ids, int br){
 		for (int i = 0; i < ids.size(); ++i) {
-				usNodeId.push_back( (unsigned short) ids[i]);
+				nodeIDList.push_back( (unsigned short) ids[i]);
 
 		}
 		deviceName = "EPOS4";
@@ -424,7 +401,7 @@ epos_cmd::epos_cmd(std::vector<int> ids, int br){
 		baudrate = br;
 		NumDevices = ids.size();
 
-		std::cout << "EPOS COMMAND START" << std::endl;
+		ROS_INFO("EPOS COMMAND START");
 }
 
 /**
@@ -432,13 +409,13 @@ epos_cmd::epos_cmd(std::vector<int> ids, int br){
  */
 epos_cmd::~epos_cmd()
 {
-	int i = 0;
-		while(!CloseDevices() && i < 5)
+		int i = 0;
+		while(!closeDevices() && i < 5)
 		{
-			std::cerr << "Failed to close devices, try " << i << "."<< std::endl;
-			++i;
+				std::cerr << "Failed to close devices, try " << i << "."<< std::endl;
+				++i;
 		};
-		if (i == 5){
-			std::cerr << "Failed: Aborting device closure" << std::endl;
+		if (i == 5) {
+				std::cerr << "Failed: Aborting device closure" << std::endl;
 		}
 }

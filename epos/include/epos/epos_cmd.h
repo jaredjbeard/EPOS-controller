@@ -48,10 +48,11 @@ typedef int BOOL;
 #endif
 
 class epos_cmd {
-void* pKeyHandle = 0;
+void* keyHandle = 0;
+unsigned int errorCode = 0;
 //unsigned short maxStrSize = 512;
 
-std::vector<unsigned short> usNodeId;
+std::vector<unsigned short> nodeIDList;
 
 std::string deviceName;
 std::string protocolStackName;
@@ -59,7 +60,6 @@ std::string interfaceName;
 std::string portName;
 int baudrate;
 int NumDevices;
-unsigned int *errorCode;
 char* errorCodeChar;
 
 
@@ -83,24 +83,27 @@ DevState current_state;
 
 //Setup error codes to print intead of being accepted as input. Makes the output simpler...
 /***********************INTIALIZATION***************************/
-int OpenDevices   ();
-int CloseDevices  ();
+int openDevices   ();
+int closeDevices  ();
 
 /***********************CONFIGURATION***************************/
-int setMode(std::vector<unsigned short> nodeIDs, OpMode mode);
+int setMode(std::vector<int> nodeIDs, OpMode mode);
 //void setModeCallback(const ; //NEED TO MAKE MESSAGE FOR THIS, need to make way to display/handle specific error
 int resetDevice(unsigned short nodeID);
 int setState(unsigned short nodeID, DevState state);
-int getState(unsigned short nodeID, DevState state);
+int getState(unsigned short nodeID, DevState &state);
 
 /***********************OPERATION*******************************/
-int handleFault(std::vector<int> nodeIDs);
-int prepareMotors(std::vector<int> nodeIDs);
+int handleFault(int ID);
+int prepareMotors(std::vector<int> IDs);
+int goToVel(std::vector<int> IDs, std::vector<long> velocities);
+//int stopVel(std::vector<int> IDs);
 
 /***********************PRINT/DEBUGGING*************************/
 int getError(unsigned short errorCodeValue);   //NEED to convert error code to text
 void logError(std::string functionName);
-
+int checkNodeID(int ID);
+int addNodeIDs(std::vector<int> IDs);
 
 
 /***********************CONSTRUCTORS****************************/
@@ -119,8 +122,6 @@ epos_cmd(std::vector<int> ids, int br);
    int   goToPos();
    int   stopPos();
    int   setVelProfile();
-   int   gotoVel();
-   int   stopVel();
    int   startHomingMode();
    int   setHome();
    int   goToHome();
@@ -136,6 +137,7 @@ private:
 
 /***********************OPERATION*****************************/
 short unsigned int getDevStateValue(DevState state);
+enum DevState getDevState(short unsigned int state);
 
 
 //  int   DemoProfilePositionMode(HANDLE p_DeviceHandle, unsigned short p_usNodeId, unsigned int & p_rlErrorCode);
