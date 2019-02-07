@@ -1,25 +1,25 @@
 /*
-	Maxon Motor Controller epos_cmd
-	epos_cmd.h
-	Purpose: Wrap EPOS commands and integrate with ROS for general purpose motor control
+   Maxon Motor Controller epos_cmd
+   epos_cmd.h
+   Purpose: Wrap EPOS commands and integrate with ROS for general purpose motor control
 
-	@author Jared Beard
-	@version 1.0 11/13/18
-*/
+   @author Jared Beard
+   @version 1.0 11/13/18
+ */
 #ifndef MOTOR_CMD_H
 #define MOTOR_CMD_H
 
-  #ifndef MMC_SUCCESS
+	#ifndef MMC_SUCCESS
 	 #define MMC_SUCCESS 0
-  #endif
+	#endif
 
-  #ifndef MMC_FAILED
+	#ifndef MMC_FAILED
 	 #define MMC_FAILED 1
-  #endif
+	#endif
 
-  #ifndef MMC_MAX_LOG_MSG_SIZE
+	#ifndef MMC_MAX_LOG_MSG_SIZE
 	 #define MMC_MAX_LOG_MSG_SIZE 512
-  #endif
+	#endif
 
 #include <ros/ros.h>
 #include <ros/console.h>
@@ -48,98 +48,94 @@ typedef int BOOL;
 #endif
 
 class epos_cmd {
-  void* pKeyHandle = 0;
-  //unsigned short maxStrSize = 512;
+void* pKeyHandle = 0;
+//unsigned short maxStrSize = 512;
 
-  std::vector<unsigned short> usNodeId;
+std::vector<unsigned short> usNodeId;
 
-  std::string deviceName;
-  std::string protocolStackName;
-  std::string interfaceName;
-  std::string portName;
-  int baudrate;
-  int NumDevices;
-  int result;
-  unsigned int *errorCode;
-  char* errorCodeChar;
+std::string deviceName;
+std::string protocolStackName;
+std::string interfaceName;
+std::string portName;
+int baudrate;
+int NumDevices;
+unsigned int *errorCode;
+char* errorCodeChar;
 
 
 public:
-    /***********************ENUMS*********************************/
-  enum OpMode {
-    OMD_PROFILE_POSITION_MODE = 1,
-    OMD_PROFILE_VELOCITY_MODE = 3,
-    OMD_HOMING_MODE = 6,
-    OMD_CURRENT_MODE = -3
-  };
-  enum DevState {
-    DISABLED = 0x0000,
-    ENABLED = 0x0001,
-    QUICKSTOP = 0x0002,
-    FAULT = 0x0003
-  };
+/***********************ENUMS*********************************/
+enum OpMode {
+		OMD_PROFILE_POSITION_MODE = 1,
+		OMD_PROFILE_VELOCITY_MODE = 3,
+		OMD_HOMING_MODE = 6,
+		OMD_CURRENT_MODE = -3
+};
+enum DevState {
+		DISABLED = 0x0000,
+		ENABLED = 0x0001,
+		QUICKSTOP = 0x0002,
+		FAULT = 0x0003
+};
 
-  /***********************VARIABLES*****************************/
-  DevState current_state;
+/***********************VARIABLES*****************************/
+DevState current_state;
 
-  //Setup error codes to print intead of being accepted as input. Makes the output simpler...
-  /***********************INTIALIZATION***************************/
-  int OpenDevices   ();
-  int CloseDevices  ();
+//Setup error codes to print intead of being accepted as input. Makes the output simpler...
+/***********************INTIALIZATION***************************/
+int OpenDevices   ();
+int CloseDevices  ();
 
+/***********************CONFIGURATION***************************/
+int setMode(std::vector<unsigned short> nodeIDs, OpMode mode);
+//void setModeCallback(const ; //NEED TO MAKE MESSAGE FOR THIS, need to make way to display/handle specific error
+int resetDevice(unsigned short nodeID);
+int setState(unsigned short nodeID, DevState state);
+int getState(unsigned short nodeID, DevState state);
 
-  /***********************CONFIGURATION***************************/
-  int setMode(unsigned short nodeID, OpMode mode);
-  //void setModeCallback(const ; //NEED TO MAKE MESSAGE FOR THIS, need to make way to display/handle specific error
-  int resetDevice(unsigned short nodeID);
-  int setState(unsigned short nodeID, DevState state);
-  int getState(unsigned short nodeID, DevState state);
+/***********************OPERATION*******************************/
+int handleFault(std::vector<int> nodeIDs);
+int prepareMotors(std::vector<int> nodeIDs);
 
-  /***********************OPERATION*******************************/
-
-
-  /***********************PRINT/DEBUGGING*************************/
-  int getError(unsigned short errorCodeValue); //NEED to convert error code to text
-  void LogError(std::string functionName, int result);
-
-
-
-  /***********************CONSTRUCTORS****************************/
-  epos_cmd(); // Set motor type, sensor types, max following error, max velocity, max acc,
-                    // velocity units, default operation mode
-  epos_cmd(std::vector<int> ids, int br);
-  //motor_cmd(); <- read input from launch
-  ~epos_cmd(){}
+/***********************PRINT/DEBUGGING*************************/
+int getError(unsigned short errorCodeValue);   //NEED to convert error code to text
+void logError(std::string functionName);
 
 
 
+/***********************CONSTRUCTORS****************************/
+epos_cmd();   // Set motor type, sensor types, max following error, max velocity, max acc,
+// velocity units, default operation mode
+epos_cmd(std::vector<int> ids, int br);
+//motor_cmd(); <- read input from launch
+~epos_cmd();
 
 
-/**  int   handleFault(); // get
-  int   getCondition();
-  int   setPosProfile();
-  int   goToPos();
-  int   stopPos();
-  int   setVelProfile();
-  int   gotoVel();
-  int   stopVel();
-  int   startHomingMode();
-  int   setHome();
-  int   goToHome();
-  int   stopHome();
-  int   waitForHome();
-  int   setCurrentMust();
-  int   getCurrentMust();*/
+
+
+
+/**   // get
+   int   setPosProfile();
+   int   goToPos();
+   int   stopPos();
+   int   setVelProfile();
+   int   gotoVel();
+   int   stopVel();
+   int   startHomingMode();
+   int   setHome();
+   int   goToHome();
+   int   stopHome();
+   int   waitForHome();
+   int   setCurrentMust();
+   int   getCurrentMust();*/
 
 
 
 private:
-  /***********************VARIABLES*****************************/
+/***********************VARIABLES*****************************/
 
-  /***********************FUNCTIONS*****************************/
-  short unsigned int getDevStateValue(DevState state);
-
-
+/***********************OPERATION*****************************/
+short unsigned int getDevStateValue(DevState state);
 
 
 //  int   DemoProfilePositionMode(HANDLE p_DeviceHandle, unsigned short p_usNodeId, unsigned int & p_rlErrorCode);
@@ -150,7 +146,7 @@ private:
 //  void cmdReceived(const geometry_msgs::Twist& msg);
 //  void clearFaultCallback(const sensor_msgs::Joy& msg);
 
-  /***************Print and Commands*****************/
+/***************Print and Commands*****************/
 
 //  int   PrepareMotor(unsigned int* pErrorCode, unsigned short int nodeId);
 
