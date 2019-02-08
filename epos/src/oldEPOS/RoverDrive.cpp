@@ -42,14 +42,14 @@ enum EAppMode
 using namespace std;
 
 void* g_pKeyHandle = 0;
-unsigned short g_usNodeId = 2;
+unsigned short g_usNodeId = 1;
 string g_deviceName;
 string g_protocolStackName;
 string g_interfaceName;
 string g_portName;
 int g_baudrate = 0;
 EAppMode g_eAppMode = AM_DEMO;
-int NumDevices = 1;
+int NumDevices = 2;
 const string g_programName = "HelloEposCmd";
 
 #ifndef MMC_SUCCESS
@@ -136,7 +136,7 @@ void PrintSettings()
 void SetDefaultParameters()
 {
 	//USB
-	g_usNodeId = 2;
+	g_usNodeId = 1;
 	g_deviceName = "EPOS4";
 	g_protocolStackName = "MAXON SERIAL V2";
 	g_interfaceName = "USB";

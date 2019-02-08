@@ -122,13 +122,14 @@ int epos_cmd::setMode(std::vector<int> IDs, OpMode mode)
 {
 		for (int i = 0; i < IDs.size(); ++i)
 		{
+				std::cout << IDs.size() << std::endl;
 				if(VCS_SetOperationMode(keyHandle, IDs[i], mode, &errorCode) == 0)
 				{
 						logError("SetOperationMode");
 						return MMC_FAILED;
 				} else
 				{
-						ROS_DEBUG("Operation mode set");
+						ROS_INFO("Operation mode set");
 				}
 		}
 		return MMC_SUCCESS;
@@ -235,6 +236,26 @@ short unsigned int epos_cmd::getDevStateValue(DevState state){
 				return fault;
 		} else {
 				std::cout << "Invalid DevState" << std::endl;
+				return 8;
+		}
+}
+
+int epos_cmd::getModeValue(OpMode mode){
+		int position = 1;
+		int velocity = 3;
+		int homing = 6;
+		int current = -3;
+
+		if (mode == position) {
+				return position;
+		} else if (mode == velocity) {
+				return velocity;
+		} else if (mode == homing) {
+				return homing;
+		} else if (mode == current) {
+				return current;
+		} else {
+				std::cout << "Invalid OpMode" << std::endl;
 				return 8;
 		}
 }

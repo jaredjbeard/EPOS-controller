@@ -48,7 +48,7 @@ string g_interfaceName;
 string g_portName;
 int g_baudrate = 0;
 EAppMode g_eAppMode = AM_DEMO;
-int NumDevices = 1;
+int NumDevices = 2;
 const string g_programName = "HelloEposCmd";
 
 #ifndef MMC_SUCCESS

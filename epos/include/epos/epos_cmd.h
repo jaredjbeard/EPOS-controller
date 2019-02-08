@@ -129,6 +129,7 @@ epos_cmd(std::vector<int> ids, int br);
    int   waitForHome();
    int   setCurrentMust();
    int   getCurrentMust();*/
+   // getpositionis -> encoder?? try to find something that decouples these from the hall sensors
 
 
 
@@ -138,6 +139,7 @@ private:
 /***********************OPERATION*****************************/
 short unsigned int getDevStateValue(DevState state);
 enum DevState getDevState(short unsigned int state);
+int getModeValue(OpMode mode);
 
 
 //  int   DemoProfilePositionMode(HANDLE p_DeviceHandle, unsigned short p_usNodeId, unsigned int & p_rlErrorCode);
