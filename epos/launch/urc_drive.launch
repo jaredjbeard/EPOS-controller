@@ -1,7 +1,7 @@
 <launch>
   <node pkg="epos" type="test_node" name="epos_motor_command" respawn="true" output="screen"/>
-  <node pkg="epos" type="gogoRover" name="epos_input_convresion" respawn="true" output="screen"/>
+  <node pkg="epos" type="gogoRover" name="epos_input_conversion" respawn="true" output="screen"/>
 
-  <node pkg="teleop_twist_joy" type="teleop_node" name="teleop_node"/>
+  <!--node pkg="teleop_twist_joy" type="teleop_node" name="teleop_node"/-->
 
 </launch>

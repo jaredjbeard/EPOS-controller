@@ -49,15 +49,15 @@ void cmdVelCallBack(const geometry_msgs::Twist& msg)
 	lVel = lVel * maxV;
 
 
-	std::cout<<"RIGHT"<<std::endl;
-	std::cout<<rVel<<std::endl;
+	//std::cout<<"RIGHT"<<std::endl;
+	//std::cout<<rVel<<std::endl;
 
-	std::cout<<"LEFT"<<std::endl;
-	std::cout<<lVel<<std::endl;
+	//std::cout<<"LEFT"<<std::endl;
+	//std::cout<<lVel<<std::endl;
 
 
 
-	std::cout<<""<<std::endl;
+	//std::cout<<""<<std::endl;
 
 
 }
@@ -82,6 +82,7 @@ int main(int argc, char** argv)
 	msg.motorIDs = {1,2,3,4};
 	//msg.driveMode = rVel;
 	//std::cout << msg.velocities << std::endl;
+	//std::cout << lVel << "__" << rVel << std::endl;
 	msg.velocities = {lVel, lVel, rVel, rVel};
 	msg.numberItems = 4;
 	chatter_pub.publish(msg);

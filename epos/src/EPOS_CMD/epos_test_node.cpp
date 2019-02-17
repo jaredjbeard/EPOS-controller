@@ -20,9 +20,10 @@ std::vector<long> vels;
 
 void motorCommandCallback(const epos::wheel_drive &msg)
 {
-
+//std::cout << msg.numberItems;
 	for (int i = 0; i < msg.numberItems; ++i)
 	{
+						
 			motorIDs[i] = msg.motorIDs[i];
 			vels[i] = msg.velocities[i];
 	}
@@ -55,7 +56,7 @@ int main(int argc, char** argv)
 
 		std::vector<long> stopVels = vels;
 		int baudrate = 1000000;
-    std::cout << motorIDs[0] << "__" << motorIDs[1] << std::endl;
+    //std::cout << motorIDs[0] << "__" << motorIDs[1] << std::endl;
 
 		std::vector<long>* positions;
 
@@ -72,7 +73,7 @@ int main(int argc, char** argv)
         int check = motorController.setMode(motorIDs, epos_cmd::OMD_PROFILE_VELOCITY_MODE);
 
 				ros::Rate rate(20);
-				while(ros::ok() && iteration < 500)
+				while(ros::ok())// && iteration < 500)
 				{
             if ( check == 0 && motorController.prepareMotors(motorIDs) == 0)
             {
@@ -98,16 +99,16 @@ int main(int argc, char** argv)
                 motorController.goToVel(motorIDs, vels);
             }
 
-						motorController.getPosition(motorIDs, positions);
+						/**motorController.getPosition(motorIDs, positions);
 						std_msgs::Int64MultiArray motorPos;
 						for (int i = 0; i < positions->size();++i)
 						{
 							motorPos.data[i] = (*positions)[i];
 						}
 
-						pub.publish(motorPos);
+						pub.publish(motorPos);*/
 
-            ++iteration;
+            //++iteration;
 						rate.sleep();
 						ros::spinOnce();
 				}
