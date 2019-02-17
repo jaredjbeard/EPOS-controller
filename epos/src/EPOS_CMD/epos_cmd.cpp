@@ -205,8 +205,9 @@ int epos_cmd::getState(unsigned short nodeID, DevState &state)
 		{
 				ROS_DEBUG("State Retrieved");
 				state = getDevState(stateValue);
-				return MMC_SUCCESS;
 				std::cout << "Motor "<< nodeID << " is in state " << state << std::endl;
+				return MMC_SUCCESS;
+
 		} else {
 				ROS_WARN("State Failed");
 				return MMC_FAILED;
@@ -287,17 +288,26 @@ int epos_cmd::handleFault(int ID)
 		std::cout << "HF start" << std::endl;
 		if(VCS_GetFaultState(keyHandle, ID, &isFault, &errorCode ))
 		{
-				logError("VCS_GetFaultState");
-				if(isFault == true && VCS_ClearFault(keyHandle, ID, &errorCode) )
+				if(isFault)
 				{
-						logError("VCS_ClearFault");
-						std::cout << "Failed Clear" << std::endl;
-						return MMC_FAILED;
+						logError("VCS_GetFaultState");
+						if(VCS_ClearFault(keyHandle, ID, &errorCode) )
+						{
+								std::cout << "Cleared" << std::endl;
+								return MMC_SUCCESS;
+						} else
+						{
+								logError("VCS_ClearFault");
+								std::cout << "Failed Clear" << std::endl;
+								return MMC_FAILED;
+						}
 				} else
 				{
-						std::cout << "Cleared" << std::endl;
-						return MMC_SUCCESS;
+						std::cout << "No fault motor " << ID << std::endl;
 				}
+		} else
+		{
+				std::cout << "Get Fault state failed" << std:: endl;
 		}
 }
 
@@ -307,19 +317,22 @@ int epos_cmd::prepareMotors(std::vector<int> IDs)
 		for (int i = 0; i < IDs.size(); ++i)
 		{
 				std::cout << "Prepare Motors "<< std::endl;
-				//if (getState(IDs[i], state) == 0)
+				if (getState(IDs[i], state) == 0)
 				{
-						//std::cout << "State " << state << std::endl;
-						//if (state == FAULT)
+						std::cout << "State " << state << ";P" << std::endl;
+						if (state == FAULT)
 						{
 								std::cout << "FAULT" << std::endl;
 								handleFault(IDs[i]);
-								std::cout << "Clear Fault " << i << std::endl;
+								std::cout << "Clear Fault " << IDs[i] << std::endl;
 						}
-						/**if (state != ENABLED)
+						if (state != ENABLED)
 						{
 								setState(IDs[i], ENABLED);
-						}*/
+						}
+				} else
+				{
+					std::cout << "Fak, get state failed motor " << IDs[i] << std::endl;
 				}
 		}
 		return MMC_SUCCESS;
