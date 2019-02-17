@@ -325,7 +325,7 @@ int epos_cmd::goToVel(std::vector<int> IDs, std::vector<long> velocities)
 
 		for (int i = 0; i < IDs.size(); ++i)
 		{
-				if (velocities[i] > 0)
+				if (abs(velocities[i]) > 0)
 				{
 						if (VCS_MoveWithVelocity(keyHandle, IDs[i], velocities[i],&errorCode) == 0)
 						{
@@ -345,6 +345,24 @@ int epos_cmd::goToVel(std::vector<int> IDs, std::vector<long> velocities)
 		return MMC_SUCCESS;
 }
 
+int epos_cmd::getPosition(std::vector<int> IDs, std::vector<long> *positions)
+{
+		int* pos = 0;
+
+		for (int i = 0; i < IDs.size(); ++i)
+		{
+			if (VCS_GetPositionIs(keyHandle, IDs[i], pos, &errorCode))
+			{
+				positions->push_back(*pos);
+			}
+			else
+			{
+				return MMC_FAILED;
+			}
+		}
+
+		return MMC_SUCCESS;
+}
 
 /////////////////////////////////////////////////////////////////////
 /***************************PRINT/DEBUGGING*************************/

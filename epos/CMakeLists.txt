@@ -3,7 +3,12 @@ project(epos)
 
 add_compile_options(-std=c++11)
 
-find_package(catkin REQUIRED COMPONENTS roscpp std_msgs message_generation geometry_msgs)
+find_package(catkin REQUIRED COMPONENTS
+roscpp
+std_msgs
+message_generation
+message_runtime
+geometry_msgs)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -99,7 +104,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp std_msgs message_generation geome
 catkin_package(
   #INCLUDE_DIRS include
   #LIBRARIES epos
-  CATKIN_DEPENDS geometry_msgs
+  CATKIN_DEPENDS geometry_msgs message_generation message_runtime
   #DEPENDS system_lib
 )
 
@@ -134,9 +139,14 @@ include_directories(include ${catkin_INCLUDE_DIRS} /opt/EposCmdLib_6.5.1.0/inclu
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/epos_node.cpp)
+
+
+
 add_executable(RoverTestDemo $ENV{EPOS_LIB_DIR} src/oldEPOS/RoverTestDemo.cpp)
 add_executable(RoverDrive $ENV{EPOS_LIB_DIR} src/oldEPOS/RoverDrive.cpp)
 add_executable(test_node $ENV{EPOS_LIB_DIR} src/EPOS_CMD/epos_test_node.cpp src/EPOS_CMD/epos_cmd.cpp)
+add_executable(gogoRover $ENV{EPOS_LIB_DIR} src/roverKinematics/URC_drive_conversion_node.cpp)
+add_dependencies(gogoRover epos_generate_messages_cpp)
 #add_executable(motor_node $ENV{EPOS_LIB_DIR} src/motor_cmd_node.cpp)
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -149,9 +159,16 @@ add_executable(test_node $ENV{EPOS_LIB_DIR} src/EPOS_CMD/epos_test_node.cpp src/
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
+
+
+
 target_link_libraries(RoverTestDemo ${catkin_LIBRARIES} EposCmd ftd2xx)
+target_link_libraries(gogoRover ${catkin_LIBRARIES})
 target_link_libraries(RoverDrive ${catkin_LIBRARIES} EposCmd ftd2xx)
-target_link_libraries(test_node ${catkin_LIBRARIES} EposCmd ftd2xx)# epos_cmd)
+target_link_libraries(test_node ${catkin_LIBRARIES} EposCmd ftd2xx)
+
+
+# epos_cmd)
 #target_link_libraries(motor_node ${catkin_LIBRARIES} EposCmd ftd2xx motor_cmd)
 #############
 ## Install ##

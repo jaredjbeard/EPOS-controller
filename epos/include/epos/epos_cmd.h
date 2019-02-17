@@ -98,6 +98,7 @@ int handleFault(int ID);
 int prepareMotors(std::vector<int> IDs);
 int goToVel(std::vector<int> IDs, std::vector<long> velocities);
 //int stopVel(std::vector<int> IDs);
+int getPosition(std::vector<int> IDs, std::vector<long> *positions);
 
 /***********************PRINT/DEBUGGING*************************/
 int getError(unsigned short errorCodeValue);   //NEED to convert error code to text
@@ -130,6 +131,9 @@ epos_cmd(std::vector<int> ids, int br);
    int   setCurrentMust();
    int   getCurrentMust();*/
    // getpositionis -> encoder?? try to find something that decouples these from the hall sensors
+	 //getvelocityis
+	 //get currentis
+	 //waitfortargetreached
 
 
 
