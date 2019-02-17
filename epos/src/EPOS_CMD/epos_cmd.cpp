@@ -206,7 +206,7 @@ int epos_cmd::getState(unsigned short nodeID, DevState &state)
 				ROS_DEBUG("State Retrieved");
 				state = getDevState(stateValue);
 				return MMC_SUCCESS;
-				std::cout << state << std::endl;
+				std::cout << "Motor "<< nodeID << " is in state " << state << std::endl;
 		} else {
 				ROS_WARN("State Failed");
 				return MMC_FAILED;
@@ -285,17 +285,17 @@ int epos_cmd::handleFault(int ID)
 {
 		BOOL isFault = 0;
 		std::cout << "HF start" << std::endl;
-		//if(VCS_GetFaultState(keyHandle, ID, &isFault, &errorCode ) == 0)
+		if(VCS_GetFaultState(keyHandle, ID, &isFault, &errorCode ))
 		{
 				logError("VCS_GetFaultState");
-				if(isFault == true && VCS_ClearFault(keyHandle, ID, &errorCode) != 0)
+				if(isFault == true && VCS_ClearFault(keyHandle, ID, &errorCode) )
 				{
 						logError("VCS_ClearFault");
 						std::cout << "Failed Clear" << std::endl;
 						return MMC_FAILED;
 				} else
 				{
-						std::cout << "Cleared" << std::endl; 						
+						std::cout << "Cleared" << std::endl;
 						return MMC_SUCCESS;
 				}
 		}
@@ -306,24 +306,20 @@ int epos_cmd::prepareMotors(std::vector<int> IDs)
 		DevState state;
 		for (int i = 0; i < IDs.size(); ++i)
 		{
-std::cout << "Prepare Motors "<< std::endl;
-				if (getState(IDs[i], state) == 0)
+				std::cout << "Prepare Motors "<< std::endl;
+				//if (getState(IDs[i], state) == 0)
 				{
-
-						std::cout << "State " << state << std::endl; 						
-						if (state == FAULT)
+						//std::cout << "State " << state << std::endl;
+						//if (state == FAULT)
 						{
-							std::cout << "FAULT" << std::endl; 				for (int j = 0; j < IDs.size(); ++j)
-{		
-							handleFault(IDs[j]);
-							std::cout << "Clear Fault " << j << std::endl;
-}
-
+								std::cout << "FAULT" << std::endl;
+								handleFault(IDs[i]);
+								std::cout << "Clear Fault " << i << std::endl;
 						}
-						if (state != ENABLED)
+						/**if (state != ENABLED)
 						{
 								setState(IDs[i], ENABLED);
-						}
+						}*/
 				}
 		}
 		return MMC_SUCCESS;
@@ -360,14 +356,14 @@ int epos_cmd::getPosition(std::vector<int> IDs, std::vector<long> *positions)
 
 		for (int i = 0; i < IDs.size(); ++i)
 		{
-			if (VCS_GetPositionIs(keyHandle, IDs[i], pos, &errorCode))
-			{
-				positions->push_back(*pos);
-			}
-			else
-			{
-				return MMC_FAILED;
-			}
+				if (VCS_GetPositionIs(keyHandle, IDs[i], pos, &errorCode))
+				{
+						positions->push_back(*pos);
+				}
+				else
+				{
+						return MMC_FAILED;
+				}
 		}
 
 		return MMC_SUCCESS;
