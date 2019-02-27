@@ -363,18 +363,24 @@ int epos_cmd::goToVel(std::vector<int> IDs, std::vector<long> velocities)
 		return MMC_SUCCESS;
 }
 
-int epos_cmd::getPosition(std::vector<int> IDs, std::vector<long> *positions)
+int epos_cmd::getPosition(std::vector<int> IDs, std::vector<int> &positions) //128 cts/turn
 {
-		int* pos = 0;
-
+		int pos = 0;
+		//ROS_WARN("---------------------------------------------------%d", pos);
+		//*pos = 1;
+		//ROS_WARN("---------------------------------------------------%d", *pos);
 		for (int i = 0; i < IDs.size(); ++i)
 		{
-				if (VCS_GetPositionIs(keyHandle, IDs[i], pos, &errorCode))
+				ROS_WARN("pos %d",  IDs[i]);
+				if (VCS_GetPositionIs(keyHandle, IDs[i], &pos, &errorCode))
 				{
-						positions->push_back(*pos);
+						ROS_WARN(" is %d", pos);
+						positions.push_back(pos);
+						std::cout << " is " << pos << std::endl;
 				}
 				else
 				{
+						std::cout << " FAILED POSITION. " << std::endl;
 						return MMC_FAILED;
 				}
 		}

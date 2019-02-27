@@ -14,16 +14,14 @@
 //#include <geometry_msgs/Twist.h>
 
 #include <stdio.h>
-#include <cmath>
 
 #define COUNTS_PER_REV 128
-#define COUNTS_PER_REV_SHAFT (128.0*2000/6.5)
 //6.5 rev of output ~= to 2k rev motor
 
 std::vector<int> motorIDs;
 std::vector<long> vels;
 
-void motorCommandCallback(const epos::wheel_drive &msg)
+/**void motorCommandCallback(const epos::wheel_drive &msg)
 {
 //std::cout << msg.numberItems;
 	for (int i = 0; i < msg.numberItems; ++i)
@@ -32,34 +30,34 @@ void motorCommandCallback(const epos::wheel_drive &msg)
 			motorIDs[i] = msg.motorIDs[i];
 			vels[i] = msg.velocities[i];
 	}
-}
+}*/
 
 
 int main(int argc, char** argv)
 {
 		ros::init(argc,argv,"subscriber");
 		ros::NodeHandle nh;
-		ros::Subscriber sub = nh.subscribe("/velocities", 10, motorCommandCallback);
-		ros::NodeHandle n;
-		ros::Publisher pub = n.advertise<std_msgs::Int64MultiArray>("/motor_pos", 1000);
+		//ros::Subscriber sub = nh.subscribe("/velocities", 10, motorCommandCallback);
+		//ros::NodeHandle n;
+		//ros::Publisher pub = n.advertise<std_msgs::Int64MultiArray>("/motor_pos", 1000);
 
 
 		motorIDs.push_back(1);
-		motorIDs.push_back(2);
-    motorIDs.push_back(3);
-    motorIDs.push_back(4);
+		//motorIDs.push_back(2);
+    //motorIDs.push_back(3);
+    //motorIDs.push_back(4);
     //std::vector<unsigned short> motorIDshort;
 		//motorIDshort.push_back(1);
 		//motorIDshort.push_back(2);
 		//motorIDs.push_back(3);
 		//motorIDs.push_back(4);
 
-    vels.push_back(0);
-    vels.push_back(0);
-    vels.push_back(0);
-    vels.push_back(0);
+    vels.push_back(7000);
+    //vels.push_back(0);
+    //vels.push_back(0);
+    std::vector<long> stopVels;
+    stopVels.push_back(0);
 
-		std::vector<long> stopVels = vels;
 		int baudrate = 1000000;
     //std::cout << motorIDs[0] << "__" << motorIDs[1] << std::endl;
 
@@ -78,7 +76,8 @@ int main(int argc, char** argv)
         int check = motorController.setMode(motorIDs, epos_cmd::OMD_PROFILE_VELOCITY_MODE);
 
 				ros::Rate rate(20);
-				while(ros::ok())// && iteration < 500)
+        int num_counts =0;
+				while(ros::ok() && num_counts < 2000*COUNTS_PER_REV)// && iteration < 500)
 				{
             if ( check == 0 && motorController.prepareMotors(motorIDs) == 0)
             {
@@ -100,22 +99,24 @@ int main(int argc, char** argv)
                   vels[2] = Vr;
                   vels[3] = Vr;*/
 
-
+                ROS_WARN("GOOD");
                 motorController.goToVel(motorIDs, vels);
             }
 
 						motorController.getPosition(motorIDs, positions);
-						std_msgs::Int64MultiArray motorPos;
+
+						//std_msgs::Int64MultiArray motorPos;
 						for (int i = 0; i < positions.size();++i)
 						{
-							motorPos.data.push_back(positions[i]);
+							std::cout << "Position " << i << " is " << positions[i] << std::endl;
 						}
-
-						pub.publish(motorPos);
+            num_counts = positions[0];
+            positions.clear();
+						//pub.publish(motorPos);*/
 
             //++iteration;
 						rate.sleep();
-						ros::spinOnce();
+						//ros::spinOnce();
 				}
         motorController.goToVel(motorIDs,stopVels);
         motorController.closeDevices();

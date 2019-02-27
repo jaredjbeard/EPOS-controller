@@ -98,7 +98,7 @@ int handleFault(int ID);
 int prepareMotors(std::vector<int> IDs);
 int goToVel(std::vector<int> IDs, std::vector<long> velocities);
 //int stopVel(std::vector<int> IDs);
-int getPosition(std::vector<int> IDs, std::vector<long> *positions);
+int getPosition(std::vector<int> IDs, std::vector<int> &positions);
 
 /***********************PRINT/DEBUGGING*************************/
 int getError(unsigned short errorCodeValue);   //NEED to convert error code to text
