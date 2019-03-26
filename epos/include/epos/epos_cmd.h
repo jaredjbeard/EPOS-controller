@@ -10,11 +10,11 @@
 #define MOTOR_CMD_H
 
 	#ifndef MMC_SUCCESS
-	 #define MMC_SUCCESS 0
+	 #define MMC_SUCCESS 1
 	#endif
 
 	#ifndef MMC_FAILED
-	 #define MMC_FAILED 1
+	 #define MMC_FAILED 0
 	#endif
 
 	#ifndef MMC_MAX_LOG_MSG_SIZE

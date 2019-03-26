@@ -75,12 +75,12 @@ int main(int argc, char** argv)
 		}
 		try{
         float iteration = 0;
-        int check = motorController.setMode(motorIDs, epos_cmd::OMD_PROFILE_VELOCITY_MODE);
-
+        int modeCheck = motorController.setMode(motorIDs, epos_cmd::OMD_PROFILE_VELOCITY_MODE);
+				int prepareCheck = motorController.prepareMotors(motorIDs);
 				ros::Rate rate(20);
 				while(ros::ok())// && iteration < 500)
 				{
-            if ( check == 0 && motorController.prepareMotors(motorIDs) == 0)
+            if ( modeCheck && prepareCheck)
             {
                 //ROS_INFO("GOTO");
                   /**epos::wheel_drive command = *(ros::topic::waitForMessage<epos::wheel_drive>("/drive"));
@@ -101,7 +101,7 @@ int main(int argc, char** argv)
                   vels[3] = Vr;*/
 
 
-                motorController.goToVel(motorIDs, vels);
+                prepareCheck = motorController.goToVel(motorIDs, vels);
             }
 
 						motorController.getPosition(motorIDs, positions);

@@ -60,11 +60,11 @@ int epos_cmd::openDevices()
 				unsigned int lBaudrate = 0;
 				unsigned int lTimeout = 0;
 
-				if(VCS_GetProtocolStackSettings(keyHandle, &lBaudrate, &lTimeout, &errorCode)!=0)
+				if(VCS_GetProtocolStackSettings(keyHandle, &lBaudrate, &lTimeout, &errorCode))
 				{
-						if(VCS_SetProtocolStackSettings(keyHandle, baudrate, lTimeout, &errorCode)!=0)
+						if(VCS_SetProtocolStackSettings(keyHandle, baudrate, lTimeout, &errorCode))
 						{
-								if(VCS_GetProtocolStackSettings(keyHandle, &lBaudrate, &lTimeout, &errorCode)!=0)
+								if(VCS_GetProtocolStackSettings(keyHandle, &lBaudrate, &lTimeout, &errorCode))
 								{
 										if(baudrate==(int)lBaudrate)
 										{
@@ -98,10 +98,10 @@ int epos_cmd::openDevices()
 int epos_cmd::closeDevices()
 {
 		int result = MMC_FAILED;
-
+		errorCode = 0;
 		ROS_INFO("Close device");
 
-		if(VCS_CloseAllDevices(&errorCode)!=0 && errorCode == 0)
+		if(VCS_CloseAllDevices(&errorCode) && errorCode == 0)
 		{
 				result = MMC_SUCCESS;
 		}
@@ -123,13 +123,13 @@ int epos_cmd::setMode(std::vector<int> IDs, OpMode mode)
 		for (int i = 0; i < IDs.size(); ++i)
 		{
 				//std::cout << IDs.size() << std::endl;
-				if(VCS_SetOperationMode(keyHandle, IDs[i], mode, &errorCode) == 0)
+				if(VCS_SetOperationMode(keyHandle, IDs[i], mode, &errorCode))
+				{
+						ROS_INFO("Operation mode set");
+				} else
 				{
 						logError("SetOperationMode");
 						return MMC_FAILED;
-				} else
-				{
-						ROS_INFO("Operation mode set");
 				}
 		}
 		return MMC_SUCCESS;
@@ -180,14 +180,13 @@ int epos_cmd::resetDevice(unsigned short nodeID)
  */
 int epos_cmd::setState(unsigned short nodeID, DevState state)
 {
-		int result = MMC_FAILED;
-
 		if( current_state == state || VCS_SetState(keyHandle,nodeID,state,&errorCode))
 		{
-				result = MMC_SUCCESS;
+				return MMC_SUCCESS;
+		} else
+		{
+			return MMC_FAILED;
 		}
-
-		return result;
 }
 
 /**
@@ -317,7 +316,7 @@ int epos_cmd::prepareMotors(std::vector<int> IDs)
 		for (int i = 0; i < IDs.size(); ++i)
 		{
 				//std::cout << "Prepare Motors "<< std::endl;
-				if (getState(IDs[i], state) == 0)
+				if (getState(IDs[i], state))
 				{
 						//std::cout << "State " << state << ";P" << std::endl;
 						if (state == FAULT)
@@ -345,7 +344,7 @@ int epos_cmd::goToVel(std::vector<int> IDs, std::vector<long> velocities)
 		{
 				if (abs(velocities[i]) > 0)
 				{
-						if (VCS_MoveWithVelocity(keyHandle, IDs[i], velocities[i],&errorCode) == 0)
+						if (!VCS_MoveWithVelocity(keyHandle, IDs[i], velocities[i],&errorCode))
 						{
 								logError("VCS_MoveWithVelocity");
 								return MMC_FAILED;
@@ -354,7 +353,7 @@ int epos_cmd::goToVel(std::vector<int> IDs, std::vector<long> velocities)
 						}
 				} else
 				{
-						if (VCS_HaltVelocityMovement(keyHandle, IDs[i],&errorCode) == 0)
+						if (!VCS_HaltVelocityMovement(keyHandle, IDs[i],&errorCode))
 						{
 								return MMC_FAILED;
 						}
