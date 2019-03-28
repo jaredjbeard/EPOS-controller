@@ -102,7 +102,12 @@ int main(int argc, char** argv)
 
 
                 prepareCheck = motorController.goToVel(motorIDs, vels);
-            }
+            } else
+						{
+							ROS_INFO("FAULT TRIGGERED");
+							prepareCheck = motorController.prepareMotors(motorIDs);
+
+						}
 
 						motorController.getPosition(motorIDs, positions);
 						std_msgs::Int64MultiArray motorPos;
