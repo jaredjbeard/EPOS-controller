@@ -26,12 +26,12 @@ std::vector<long> vels;
 void motorCommandCallback(const epos::wheel_drive &msg)
 {
 //std::cout << msg.numberItems;
-	for (int i = 0; i < msg.numberItems; ++i)
-	{
+		for (int i = 0; i < msg.numberItems; ++i)
+		{
 
-			motorIDs[i] = msg.motorIDs[i];
-			vels[i] = msg.velocities[i];
-	}
+				motorIDs[i] = msg.motorIDs[i];
+				vels[i] = msg.velocities[i];
+		}
 }
 
 
@@ -46,88 +46,79 @@ int main(int argc, char** argv)
 
 		motorIDs.push_back(1);
 		motorIDs.push_back(2);
-    motorIDs.push_back(3);
-    motorIDs.push_back(4);
-    //std::vector<unsigned short> motorIDshort;
+		motorIDs.push_back(3);
+		motorIDs.push_back(4);
+		//std::vector<unsigned short> motorIDshort;
 		//motorIDshort.push_back(1);
 		//motorIDshort.push_back(2);
 		//motorIDs.push_back(3);
 		//motorIDs.push_back(4);
 
-    vels.push_back(0);
-    vels.push_back(0);
-    vels.push_back(0);
-    vels.push_back(0);
-
+		vels.push_back(0);
+		vels.push_back(0);
+		vels.push_back(0);
+		vels.push_back(0);
+		std_msgs::Int64MultiArray motorPosPrev;
+		std_msgs::Int64MultiArray motorPos;
+		for (int i = 0; i < motorIDs.size(); ++i)	motorPosPrev.data.push_back(0);
+		for (int i = 0; i < motorIDs.size(); ++i)	motorPosPrev.data.push_back(1);
 		std::vector<long> stopVels = vels;
 		int baudrate = 1000000;
-    //std::cout << motorIDs[0] << "__" << motorIDs[1] << std::endl;
+		//std::cout << motorIDs[0] << "__" << motorIDs[1] << std::endl;
 
 		std::vector<int> positions;
 
 
 		epos_cmd motorController(motorIDs, baudrate);
 
-		if (motorController.openDevices())
+		if (!motorController.openDevices())
 		{
 				ROS_FATAL("Motor not opened");
 				return 1;
 		}
 		try{
-        float iteration = 0;
-        int modeCheck = motorController.setMode(motorIDs, epos_cmd::OMD_PROFILE_VELOCITY_MODE);
+				float iteration = 0;
+				int modeCheck = motorController.setMode(motorIDs, epos_cmd::OMD_PROFILE_VELOCITY_MODE);
 				int prepareCheck = motorController.prepareMotors(motorIDs);
 				ros::Rate rate(20);
-				while(ros::ok())// && iteration < 500)
+				while(ros::ok()) // && iteration < 500)
 				{
-            if ( modeCheck && prepareCheck)
-            {
-                //ROS_INFO("GOTO");
-                  /**epos::wheel_drive command = *(ros::topic::waitForMessage<epos::wheel_drive>("/drive"));
-                  for (int i = 0; i < motorIDs.size(); ++ i)
-                  {
-                    motors.push_back(command.motorIDs[i]);
-                    velocities.push_back(command.velocities[i]);
-                  }*/
-                  /**geometry_msgs::Twist command = *(ros::topic::waitForMessage<geometry_msgs::Twist>("/cmd_vel"));
-                  long Vl = (command.linear.x + 0.5*command.angular.z)*400;
-                  long Vr = -(command.linear.x + 0.5*command.angular.z)*400;
-
-                  std::cout << Vl << "__" << Vr << std::endl;
-
-                  vels[0] = Vl;
-                  vels[1] = Vl;
-                  vels[2] = Vr;
-                  vels[3] = Vr;*/
-
-
-                prepareCheck = motorController.goToVel(motorIDs, vels);
-            } else
+						// I suspect these changes may need to be made on a per motor basis to get desired behavior
+						bool moving = false;
+						bool fault = false;
+						for (int i = 0; i < vels.size(); ++i)	if (vels[i] != 0) moving = true;
+						for (int i = 0; i < motorIDs.size(); ++i)	if (motorPosPrev.data[i] == motorPos.data[i]) fault = true;
+						if ( moving && modeCheck && !fault)
 						{
-							ROS_INFO("FAULT TRIGGERED");
-							prepareCheck = motorController.prepareMotors(motorIDs);
+								prepareCheck = motorController.goToVel(motorIDs, vels);
+						} else
+						{
+								ROS_INFO("FAULT TRIGGERED");
+								prepareCheck = motorController.prepareMotors(motorIDs);
 
 						}
 
 						motorController.getPosition(motorIDs, positions);
-						std_msgs::Int64MultiArray motorPos;
-						for (int i = 0; i < positions.size();++i)
+
+
+						for (int i = 0; i < positions.size(); ++i)
 						{
-							motorPos.data.push_back(positions[i]);
+								motorPosPrev.data[i] = motorPos.data[i];
+								motorPos.data[i] = positions[i];
 						}
 
 						pub.publish(motorPos);
 
-            //++iteration;
+						//++iteration;
 						rate.sleep();
 						ros::spinOnce();
 				}
-        motorController.goToVel(motorIDs,stopVels);
-        motorController.closeDevices();
+				motorController.goToVel(motorIDs,stopVels);
+				motorController.closeDevices();
 				return 0;
 		} catch (const std::exception& e)
 		{
-      motorController.closeDevices();
-			return 1;
+				motorController.closeDevices();
+				return 1;
 		}
 }
