@@ -88,18 +88,15 @@ int main(int argc, char** argv)
 						bool fault = false;
 						for (int i = 0; i < vels.size(); ++i)	if (vels[i] != 0) moving = true;
 						for (int i = 0; i < motorIDs.size(); ++i)	if (motorPosPrev.data[i] == motorPos.data[i]) fault = true;
-						if ( moving && modeCheck && !fault)
+						if (!( moving && modeCheck && !fault))
 						{
-								prepareCheck = motorController.goToVel(motorIDs, vels);
-						} else
-						{
+
 								ROS_INFO("FAULT TRIGGERED");
 								prepareCheck = motorController.prepareMotors(motorIDs);
 
 						}
-
+						prepareCheck = motorController.goToVel(motorIDs, vels);
 						motorController.getPosition(motorIDs, positions);
-
 
 						for (int i = 0; i < positions.size(); ++i)
 						{
