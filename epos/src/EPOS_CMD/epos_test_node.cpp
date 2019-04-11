@@ -30,7 +30,7 @@ void motorCommandCallback(const epos::wheel_drive &msg)
 		{
 
 				motorIDs[i] = msg.motorIDs[i];
-				vels[i] = msg.velocities[i];
+				vels[i] = msg.command[i];
 		}
 }
 
@@ -78,7 +78,7 @@ int main(int argc, char** argv)
 		}
 		try{
 				float iteration = 0;
-				int modeCheck = motorController.setMode(motorIDs, epos_cmd::OMD_PROFILE_VELOCITY_MODE);
+				motorController.setMode(motorIDs, epos_cmd::OMD_PROFILE_VELOCITY_MODE);
 				int prepareCheck = motorController.prepareMotors(motorIDs);
 				ros::Rate rate(20);
 				while(ros::ok()) // && iteration < 500)
@@ -88,7 +88,7 @@ int main(int argc, char** argv)
 						bool fault = false;
 						for (int i = 0; i < vels.size(); ++i)	if (vels[i] != 0) moving = true;
 						for (int i = 0; i < motorIDs.size(); ++i)	if (motorPosPrev.data[i] == motorPos.data[i]) fault = true;
-						if (!( moving && modeCheck && !fault))
+						if (!( moving && !fault))
 						{
 
 								ROS_INFO("FAULT TRIGGERED");

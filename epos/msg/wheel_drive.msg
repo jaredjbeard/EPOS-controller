@@ -1,6 +1,4 @@
-
-
-int16   driveMode
+string  driveMode
 int16   numberItems
 int16[] motorIDs
-int64[] velocities
+int64[] command

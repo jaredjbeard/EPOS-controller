@@ -120,6 +120,7 @@ int epos_cmd::closeDevices()
  */
 int epos_cmd::setMode(std::vector<int> IDs, OpMode mode)
 {
+		current_mode = mode;
 		for (int i = 0; i < IDs.size(); ++i)
 		{
 				//std::cout << IDs.size() << std::endl;
@@ -185,7 +186,7 @@ int epos_cmd::setState(unsigned short nodeID, DevState state)
 				return MMC_SUCCESS;
 		} else
 		{
-			return MMC_FAILED;
+				return MMC_FAILED;
 		}
 }
 
@@ -204,7 +205,7 @@ int epos_cmd::getState(unsigned short nodeID, DevState &state)
 		{
 				ROS_DEBUG("State Retrieved");
 				state = getDevState(stateValue);
-				std::cout << "Motor "<< nodeID << " is in state " << state << std::endl;
+				//std::cout << "Motor "<< nodeID << " is in state " << state << std::endl;
 				return MMC_SUCCESS;
 
 		} else {
@@ -276,7 +277,7 @@ enum epos_cmd::DevState epos_cmd::getDevState(short unsigned int state)
 		} else if (state == fault) {
 				return FAULT;
 		} else {
-				std::cout << "Invalid DevStateValues" << std::endl;
+				ROS_WARN("Invalid DevStateValues");
 				return FAULT;
 		}
 }
@@ -292,21 +293,21 @@ int epos_cmd::handleFault(int ID)
 						logError("VCS_GetFaultState");
 						if(VCS_ClearFault(keyHandle, ID, &errorCode) )
 						{
-								std::cout << "Cleared" << std::endl;
+								ROS_INFO("Fault Cleared");
 								return MMC_SUCCESS;
 						} else
 						{
 								logError("VCS_ClearFault");
-								std::cout << "Failed Clear" << std::endl;
+								ROS_INFO("Failed Fault Clear");
 								return MMC_FAILED;
 						}
 				} else
 				{
-						std::cout << "No fault motor " << ID << std::endl;
+						ROS_DEBUG("No fault motor");
 				}
 		} else
 		{
-				std::cout << "Get Fault state failed" << std:: endl;
+				ROS_WARN("Get Fault state failed");
 		}
 }
 
@@ -331,7 +332,7 @@ int epos_cmd::prepareMotors(std::vector<int> IDs)
 						}
 				} else
 				{
-					std::cout << "Fak, get state failed motor " << IDs[i] << std::endl;
+						ROS_WARN("Get state failed: motor %d", IDs[i]);
 				}
 		}
 		return MMC_SUCCESS;
@@ -339,6 +340,7 @@ int epos_cmd::prepareMotors(std::vector<int> IDs)
 
 int epos_cmd::goToVel(std::vector<int> IDs, std::vector<long> velocities)
 {
+		if (current_mode != OMD_PROFILE_VELOCITY_MODE) setMode(IDs, OMD_PROFILE_VELOCITY_MODE);
 
 		for (int i = 0; i < IDs.size(); ++i)
 		{
@@ -386,6 +388,26 @@ int epos_cmd::getPosition(std::vector<int> IDs, std::vector<int> &positions) //1
 
 		return MMC_SUCCESS;
 }
+
+int epos_cmd::goToTorque(std::vector<int> IDs, std::vector<long> torques, double gr)
+{
+		if (current_mode != OMD_CURRENT_MODE) setMode(IDs, OMD_CURRENT_MODE);
+
+		for (int i = 0; i < IDs.size(); ++i)
+		{
+				short currentA = floor(torques[i]/(kT*gr));
+				if (VCS_SetCurrentMust(keyHandle, IDs[i], currentA,&errorCode))
+				{
+						ROS_INFO("Running Current");
+				} else {
+						logError("VCS_SetCurrentMust");
+						return MMC_FAILED;
+				}
+
+		}
+		return MMC_SUCCESS;
+}
+
 
 /////////////////////////////////////////////////////////////////////
 /***************************PRINT/DEBUGGING*************************/

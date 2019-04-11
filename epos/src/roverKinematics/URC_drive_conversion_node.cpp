@@ -83,7 +83,7 @@ int main(int argc, char** argv)
 	//msg.driveMode = rVel;
 	//std::cout << msg.velocities << std::endl;
 	//std::cout << lVel << "__" << rVel << std::endl;
-	msg.velocities = {lVel, lVel, rVel, rVel};
+	msg.command = {lVel, lVel, rVel, rVel};
 	msg.numberItems = 4;
 	chatter_pub.publish(msg);
 

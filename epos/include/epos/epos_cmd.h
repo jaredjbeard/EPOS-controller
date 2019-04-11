@@ -80,6 +80,7 @@ enum DevState {
 
 /***********************VARIABLES*****************************/
 DevState current_state;
+OpMode current_mode;
 
 //Setup error codes to print intead of being accepted as input. Makes the output simpler...
 /***********************INTIALIZATION***************************/
@@ -98,7 +99,8 @@ int handleFault(int ID);
 int prepareMotors(std::vector<int> IDs);
 int goToVel(std::vector<int> IDs, std::vector<long> velocities);
 //int stopVel(std::vector<int> IDs);
-int getPosition(std::vector<int> IDs, std::vector<int> &positions);
+int getPosition(std::vector<int> IDs, std::vector<int> &positions); //put in check that mode is correct
+int goToTorque(std::vector<int> IDs, std::vector<long> torques, double gr);
 
 /***********************PRINT/DEBUGGING*************************/
 int getError(unsigned short errorCodeValue);   //NEED to convert error code to text
@@ -139,7 +141,7 @@ epos_cmd(std::vector<int> ids, int br);
 
 private:
 /***********************VARIABLES*****************************/
-
+double kT = 31.5; // mNm/A
 /***********************OPERATION*****************************/
 short unsigned int getDevStateValue(DevState state);
 enum DevState getDevState(short unsigned int state);

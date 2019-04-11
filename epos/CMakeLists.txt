@@ -145,6 +145,7 @@ include_directories(include ${catkin_INCLUDE_DIRS} /opt/EposCmdLib_6.5.1.0/inclu
 add_executable(RoverTestDemo $ENV{EPOS_LIB_DIR} src/oldEPOS/RoverTestDemo.cpp)
 add_executable(RoverDrive $ENV{EPOS_LIB_DIR} src/oldEPOS/RoverDrive.cpp)
 add_executable(test_node $ENV{EPOS_LIB_DIR} src/EPOS_CMD/epos_test_node.cpp src/EPOS_CMD/epos_cmd.cpp)
+add_executable(epos_fsm_node $ENV{EPOS_LIB_DIR} src/EPOS_CMD/epos_FSM_node.cpp src/EPOS_CMD/epos_cmd.cpp)
 add_executable(hc_test_node $ENV{EPOS_LIB_DIR} src/EPOS_CMD/epos_hardcode_test_node.cpp src/EPOS_CMD/epos_cmd.cpp)
 add_executable(gogoRover $ENV{EPOS_LIB_DIR} src/roverKinematics/URC_drive_conversion_node.cpp)
 add_dependencies(gogoRover epos_generate_messages_cpp)
@@ -162,7 +163,7 @@ add_dependencies(gogoRover epos_generate_messages_cpp)
 ## Specify libraries to link a library or executable target against
 
 
-
+target_link_libraries(epos_fsm_node ${catkin_LIBRARIES} EposCmd ftd2xx)
 target_link_libraries(RoverTestDemo ${catkin_LIBRARIES} EposCmd ftd2xx)
 target_link_libraries(gogoRover ${catkin_LIBRARIES})
 target_link_libraries(RoverDrive ${catkin_LIBRARIES} EposCmd ftd2xx)
