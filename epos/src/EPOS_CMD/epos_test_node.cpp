@@ -60,7 +60,7 @@ int main(int argc, char** argv)
 		vels.push_back(0);
 		std_msgs::Int64MultiArray motorPosPrev;
 		std_msgs::Int64MultiArray motorPos;
-		for (int i = 0; i < motorIDs.size(); ++i)	motorPosPrev.data.push_back(0);
+		for (int i = 0; i < motorIDs.size(); ++i)	motorPos.data.push_back(0);
 		for (int i = 0; i < motorIDs.size(); ++i)	motorPosPrev.data.push_back(1);
 		std::vector<long> stopVels = vels;
 		int baudrate = 1000000;
@@ -76,32 +76,44 @@ int main(int argc, char** argv)
 				ROS_FATAL("Motor not opened");
 				return 1;
 		}
-		try{
+		
+		try{    
+		        
 				float iteration = 0;
 				motorController.setMode(motorIDs, epos_cmd::OMD_PROFILE_VELOCITY_MODE);
+				
 				int prepareCheck = motorController.prepareMotors(motorIDs);
+
 				ros::Rate rate(20);
 				while(ros::ok()) // && iteration < 500)
 				{
 						// I suspect these changes may need to be made on a per motor basis to get desired behavior
 						bool moving = false;
 						bool fault = false;
-						for (int i = 0; i < vels.size(); ++i)	if (vels[i] != 0) moving = true;
+
+						for (int i = 0; i < vels.size(); ++i)if (vels[i] != 0)   moving = true;
+
 						for (int i = 0; i < motorIDs.size(); ++i)	if (motorPosPrev.data[i] == motorPos.data[i]) fault = true;
-						if (!( moving && !fault))
+
+						if ( moving && fault)
 						{
 
 								ROS_INFO("FAULT TRIGGERED");
 								prepareCheck = motorController.prepareMotors(motorIDs);
 
-						}
-						prepareCheck = motorController.goToVel(motorIDs, vels);
-						motorController.getPosition(motorIDs, positions);
 
+						}
+
+						prepareCheck = motorController.goToVel(motorIDs, vels);
+						positions.clear();
+						motorController.getPosition(motorIDs, positions);
+                        //std::cout << positions.size() << std::endl;
 						for (int i = 0; i < positions.size(); ++i)
 						{
 								motorPosPrev.data[i] = motorPos.data[i];
 								motorPos.data[i] = positions[i];
+								//std::cout << "Umm..." << std::endl;
+								//std::cout << motorPos.data[i] << std::endl;
 						}
 
 						pub.publish(motorPos);
@@ -109,7 +121,9 @@ int main(int argc, char** argv)
 						//++iteration;
 						rate.sleep();
 						ros::spinOnce();
+
 				}
+
 				motorController.goToVel(motorIDs,stopVels);
 				motorController.closeDevices();
 				return 0;

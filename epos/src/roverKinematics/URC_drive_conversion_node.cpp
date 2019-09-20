@@ -9,8 +9,8 @@
 
 
 
-double lVel;
-double rVel;
+double lVel = 0;
+double rVel = 0;
 double normal;
 double maxV = 7000;
 
@@ -83,7 +83,7 @@ int main(int argc, char** argv)
 	//msg.driveMode = rVel;
 	//std::cout << msg.velocities << std::endl;
 	//std::cout << lVel << "__" << rVel << std::endl;
-	msg.command = {lVel, lVel, rVel, rVel};
+	msg.command = {rVel, lVel, lVel, rVel};
 	msg.numberItems = 4;
 	chatter_pub.publish(msg);
 

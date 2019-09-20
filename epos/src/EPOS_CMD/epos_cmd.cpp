@@ -319,7 +319,7 @@ int epos_cmd::prepareMotors(std::vector<int> IDs)
 				//std::cout << "Prepare Motors "<< std::endl;
 				if (getState(IDs[i], state))
 				{
-						//std::cout << "State " << state << ";P" << std::endl;
+						//std::cout << "State " << state << " ;P" << std::endl;
 						if (state == FAULT)
 						{
 								std::cout << "FAULT" << std::endl;

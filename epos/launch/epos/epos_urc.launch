@@ -4,7 +4,7 @@
   <param name="gear_ratio"      value="74.0"/>
   <param name="counts_per_rev"  value="128.0"/>
   <param name="baudrate"        value="1000000"/>
-  <!--param name="output_radius"    value="0.1397"/> <!--m, corresponds to 11 in diameter-->
+  <!--param name="output_radius"    value="0.1397"/> <-m, corresponds to 11 in diameter-->
 
   <node pkg="epos" type="test_node" name="epos_motor_command" respawn="true" output="screen"/>
   <node pkg="epos" type="gogoRover" name="epos_input_conversion" respawn="true" output="screen"/>

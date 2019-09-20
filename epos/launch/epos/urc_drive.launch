@@ -3,5 +3,5 @@
   <node pkg="epos" type="gogoRover" name="epos_input_conversion" respawn="true" output="screen"/>
 
   <!--node pkg="teleop_twist_joy" type="teleop_node" name="teleop_node"/-->
-
+  <include file="$(find teleop_twist_joy)/launch/teleop.launch"/>
 </launch>
