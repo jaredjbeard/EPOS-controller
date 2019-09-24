@@ -100,6 +100,7 @@ int prepareMotors(std::vector<int> IDs);
 int goToVel(std::vector<int> IDs, std::vector<long> velocities);
 //int stopVel(std::vector<int> IDs);
 int getPosition(std::vector<int> IDs, std::vector<int> &positions); //put in check that mode is correct
+int getCurrent(std::vector<int> IDs, std::vector<short> &currents); 
 int goToTorque(std::vector<int> IDs, std::vector<long> torques, double gr);
 
 /***********************PRINT/DEBUGGING*************************/

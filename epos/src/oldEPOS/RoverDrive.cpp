@@ -372,6 +372,23 @@ bool SetVelocity(HANDLE p_DeviceHandle, unsigned short p_usNodeId, unsigned int 
 	return lResult;
 }
 
+void getCurrent(HANDLE p_DeviceHandle, unsigned short p_usNodeId) 
+{
+    int lResult = MMC_SUCCESS;
+    short int current = 0; 
+    unsigned int p_ErrorCode;
+    short int ppCurrentls; 
+    if(VCS_GetCurrentIs(p_DeviceHandle, 2, &ppCurrentls, &p_ErrorCode) == 0) 
+    { 
+    //current = ppCurrentls; 
+    //std::cout << current << std::endl; 
+    
+    lResult = MMC_FAILED;
+	LogError("VCS_GetCurrentIs", lResult, p_ErrorCode); 
+    }
+    ROS_INFO_STREAM("AHHHHHHHH " << ppCurrentls);
+}
+
 bool ActivateProfileVelocityMode(HANDLE p_DeviceHandle, unsigned short p_usNodeId, unsigned int & p_rlErrorCode)
 {
 	int lResult = MMC_SUCCESS;
@@ -666,18 +683,23 @@ int PrintAvailableProtocols()
 
 	return lResult;
 }
+
 void cmdReceived(const geometry_msgs::Twist& msg)
 {
     ROS_INFO_STREAM("Test: " << msg.linear.x);
 
     int lResult = MMC_SUCCESS;
 	unsigned int lErrorCode = 0;
+
 	long MaxRPM = 7000;
 	long valueRight = (msg.linear.x + msg.angular.z)*MaxRPM;
 	long valueLeft = (msg.linear.x - msg.angular.z)*MaxRPM;
 	long Velocity;
     for (int deviceNum = 1; deviceNum < (NumDevices + 1); deviceNum++)
     {
+        //short current; 
+        getCurrent(g_pKeyHandle, deviceNum); 
+        //ROS_INFO_STREAM("AHHHHHHHH " << current);
         if(deviceNum < 4)
         {
             Velocity = valueLeft;

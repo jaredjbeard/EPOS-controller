@@ -389,6 +389,31 @@ int epos_cmd::getPosition(std::vector<int> IDs, std::vector<int> &positions) //1
 		return MMC_SUCCESS;
 }
 
+int epos_cmd::getCurrent(std::vector<int> IDs, std::vector<short> &currents)
+{
+    	short current = 0;
+		//ROS_WARN("---------------------------------------------------%d", pos);
+		//*pos = 1;
+		//ROS_WARN("---------------------------------------------------%d", *pos);
+		for (int i = 0; i < IDs.size(); ++i)
+		{
+				ROS_WARN("current %d",  IDs[i]);
+				if (VCS_GetCurrentIs(keyHandle, IDs[i], &current, &errorCode))
+				{
+						ROS_WARN(" is %d", current);
+						currents.push_back(current);
+						std::cout << " is " << current << std::endl;
+				}
+				else
+				{
+						std::cout << " FAILED CURRENT. " << std::endl;
+						return MMC_FAILED;
+				}
+		}
+
+		return MMC_SUCCESS;
+}
+
 int epos_cmd::goToTorque(std::vector<int> IDs, std::vector<long> torques, double gr)
 {
 		if (current_mode != OMD_CURRENT_MODE) setMode(IDs, OMD_CURRENT_MODE);
