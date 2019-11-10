@@ -293,7 +293,7 @@ int epos_cmd::handleFault(int ID)
 						logError("VCS_GetFaultState");
 						if(VCS_ClearFault(keyHandle, ID, &errorCode) )
 						{
-								ROS_INFO("Fault Cleared");
+								ROS_INFO("Fault Cleared Motor: %b", ID);
 								return MMC_SUCCESS;
 						} else
 						{

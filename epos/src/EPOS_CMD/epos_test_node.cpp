@@ -96,18 +96,11 @@ int main(int argc, char** argv)
 
 						for (int i = 0; i < vels.size(); ++i)if (vels[i] != 0)   moving = true;
 
-						for (int i = 0; i < motorIDs.size(); ++i)	if (motorPosPrev.data[i] == motorPos.data[i]) fault = true;
 
-						if ( moving && fault)
-						{
+						prepareCheck = motorController.prepareMotors(motorIDs);
 
-								ROS_INFO("FAULT TRIGGERED");
-								prepareCheck = motorController.prepareMotors(motorIDs);
-
-
-						}
-
-						prepareCheck = motorController.goToVel(motorIDs, vels);
+						motorController.goToVel(motorIDs, vels);
+						
 						positions.clear();
 						currents.clear(); 						
 						motorController.getPosition(motorIDs, positions);
