@@ -35,7 +35,7 @@ void cmdVelCallBack(const geometry_msgs::Twist& msg)
 
 
 
-	normal = std::max(rVel,lVel);
+	normal = std::max(fabs(rVel),fabs(lVel));
 	//std::cout<<"Normalizer"<<std::endl;
 	//std::cout<<normal<<std::endl;
 
